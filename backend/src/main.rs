@@ -1,5 +1,5 @@
 #[macro_use] extern crate rocket;
-
+use std::env;
 mod models;
 use models::task_model::{Task, Priority};
 
@@ -13,10 +13,18 @@ fn index() -> String {
         due_date: 123123,
         is_completed: true,
     };
+
     task.title
 }
 
 #[launch]
 fn rocket() -> _ {
-    rocket::build().mount("/", routes![index])
+    let db = match set_up_db().await {
+        Ok(db) => db,
+        Err(err) => panic!("{}", err),
+    };
+
+    rocket::build()
+        .manage(db)
+        .mount("/", routes![index, bakeries])
 }
