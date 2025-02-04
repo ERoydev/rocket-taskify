@@ -1,3 +1,8 @@
+# Ignore compiled binaries and build artifacts
+backend/migration/target/
+backend/migration/target/debug/
+backend/migration/target/debug/deps/
+
 backend/target
 
 backend/.env
