@@ -38,3 +38,23 @@ Yes but in migration i have this errorr
 
 
 But it works like that i am supposed to create my migration code in hand and then use it to generate entity is that right
+
+Okay after i have configured my db connection in seaORM on Rocket framework how interact with it in GET or POST request 
+
+i have setup file for db taken from here https://www.sea-ql.org/sea-orm-tutorial/ch02-02-connect-to-database.html
+It has logic to create if not exists, drop if exists, and create after it was dropped. This is cause my current database tables created from migration to dissappear. How i can implement command to migrate things up after database is recreated, so my migration files will create the tables
+
+I cannot import Migrator to migrate programatically. As i see in docs i should use use migration::{Migrator, MigrationTrait}; But when i use it recieve unresolved import migration
+use of undeclared crate or module migration error
+
+I fixed it can you show me how to use it in function that does not return Result or Option
+
+&db passed in migrator::up() have this error 
+the trait bound &sea_orm::DatabaseConnection: IntoSchemaManagerConnection<'_> is not satisfied
+the following other types implement trait IntoSchemaManagerConnection<'c>:
+  &'c migration::sea_orm::DatabaseConnection
+  &'c migration::sea_orm::DatabaseTransaction
+  SchemaManagerConnection<'c>rustcClick for full compiler diagnostic
+main.rs(45, 5): required by a bound introduced by this call
+migrator.rs(231, 12): required by a bound in migration::MigratorTrait::up
+
