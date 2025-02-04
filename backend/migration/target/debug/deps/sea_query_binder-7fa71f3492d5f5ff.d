@@ -1,0 +1,10 @@
+C:\ProgrammingStuff\Rust\rocket-taskify\backend\migration\target\debug\deps\libsea_query_binder-7fa71f3492d5f5ff.rmeta: C:\Users\eroyd\.cargo\registry\src\index.crates.io-6f17d22bba15001f\sea-query-binder-0.7.0\src\lib.rs C:\Users\eroyd\.cargo\registry\src\index.crates.io-6f17d22bba15001f\sea-query-binder-0.7.0\src\sqlx_postgres.rs C:\Users\eroyd\.cargo\registry\src\index.crates.io-6f17d22bba15001f\sea-query-binder-0.7.0\src\values.rs C:\Users\eroyd\.cargo\registry\src\index.crates.io-6f17d22bba15001f\sea-query-binder-0.7.0\src\sqlx.rs
+
+C:\ProgrammingStuff\Rust\rocket-taskify\backend\migration\target\debug\deps\libsea_query_binder-7fa71f3492d5f5ff.rlib: C:\Users\eroyd\.cargo\registry\src\index.crates.io-6f17d22bba15001f\sea-query-binder-0.7.0\src\lib.rs C:\Users\eroyd\.cargo\registry\src\index.crates.io-6f17d22bba15001f\sea-query-binder-0.7.0\src\sqlx_postgres.rs C:\Users\eroyd\.cargo\registry\src\index.crates.io-6f17d22bba15001f\sea-query-binder-0.7.0\src\values.rs C:\Users\eroyd\.cargo\registry\src\index.crates.io-6f17d22bba15001f\sea-query-binder-0.7.0\src\sqlx.rs
+
+C:\ProgrammingStuff\Rust\rocket-taskify\backend\migration\target\debug\deps\sea_query_binder-7fa71f3492d5f5ff.d: C:\Users\eroyd\.cargo\registry\src\index.crates.io-6f17d22bba15001f\sea-query-binder-0.7.0\src\lib.rs C:\Users\eroyd\.cargo\registry\src\index.crates.io-6f17d22bba15001f\sea-query-binder-0.7.0\src\sqlx_postgres.rs C:\Users\eroyd\.cargo\registry\src\index.crates.io-6f17d22bba15001f\sea-query-binder-0.7.0\src\values.rs C:\Users\eroyd\.cargo\registry\src\index.crates.io-6f17d22bba15001f\sea-query-binder-0.7.0\src\sqlx.rs
+
+C:\Users\eroyd\.cargo\registry\src\index.crates.io-6f17d22bba15001f\sea-query-binder-0.7.0\src\lib.rs:
+C:\Users\eroyd\.cargo\registry\src\index.crates.io-6f17d22bba15001f\sea-query-binder-0.7.0\src\sqlx_postgres.rs:
+C:\Users\eroyd\.cargo\registry\src\index.crates.io-6f17d22bba15001f\sea-query-binder-0.7.0\src\values.rs:
+C:\Users\eroyd\.cargo\registry\src\index.crates.io-6f17d22bba15001f\sea-query-binder-0.7.0\src\sqlx.rs:

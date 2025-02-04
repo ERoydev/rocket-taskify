@@ -6,3 +6,6 @@ edition = "2021"
 [dependencies]
 rocket = { version = "0.5", features = ["json"] }
 sea-orm = { version = "^0.12.0", features = [ "sqlx-postgres", "runtime-tokio-rustls", "macros" ] }
+tokio = {version = "1.43", features = ["full"]}
+serde = { version="1", features = ["derive"]}
+dotenvy = "0.15"
