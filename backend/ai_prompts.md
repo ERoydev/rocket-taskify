@@ -14,3 +14,4 @@ Do rust have ORM features because i am working on Rocket framework and i am wond
 
 i have never used ORM in Rust before i hav experience in python ORM only. Suggest me the most easy to pickup ORM tool in Rust 
 
+How in rust rocket framework the module system works. For example in pure rust i use lib.rs and i use the other modules by the package name with mod.rs file inside. But in rocket i have created structure like src/models/task_model.rs, src/routes/routes.rs and so on.
