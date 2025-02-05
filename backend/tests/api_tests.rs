@@ -39,6 +39,7 @@ mod tests {
                 is_completed: false,
             },
         ];
+        
 
         // Create a mock database with the prepared data
         let db = MockDatabase::new(DatabaseBackend::Postgres)
