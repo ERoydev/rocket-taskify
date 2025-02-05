@@ -4,6 +4,15 @@ use rocket::Responder;
 use sea_orm::DbErr;
 
 
+/*
+This is my custom Error Responder created via seaORM Tutorials Documentation
+
+Used to catch and handle errors for example when i create_task i return it with
+
+        Return((), ErrorResponder) 
+*/
+
+
 #[derive(Responder)]
 #[response(status = 500, content_type = "json")]
 pub struct ErrorResponder {

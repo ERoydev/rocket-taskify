@@ -90,3 +90,23 @@ What is this error i see it for the first time
 
 Now explain to me for seaOrm how i use it in my API Endpoints to create records in my table
 
+
+This is from seaORM TaskEntity::find().all(db).await. I wonder what kind of data this function chain returns. Lets say that each object looks like that {"name": "Emil", "age": "24"}. Don't give me code just give me visualization of how it looks so i can understand how to return the full data from the Api.
+
+
+Okay my rust model is from entities it does not have serialize macros on it, so is it good approach to create something like Interface struct for example Task{} that will be responsible to serialize. Or this is not the widely used approach
+
+
+Interesting if i put macro on the motel inside my Entity folder which corresponds to my database table it works but with my own TaskDTO doesn't work. And when i try to use this TaskDTO as a returning argument i have some error because the actuall result from find().all().await.unwrap() .. is <Vec<Model> not <Vec<TaskDTO>> first explain how i can fix this error. Second what is the purpose of craating my own TaskDTO interface when it works without it just fine.
+
+
+Ahaa so this TaskDTO can fix a problem with me for date. Because i am using unix_timestamp so with that i can impl a function that converts this unix timestamp into normal date format which i can send to frontend ready for visualization
+
+
+Can u show me how a test cases should look for API on rust rocket framework
+
+
+Give me rust implemenatiton of converting Unix-Timestamp into normal format date like dd-mm-yy i need simpler implementation
+
+
+Is it good approach to keep both converted due_date into String and the unix_timestamp in another property since i want to make bussiness logic for example the most closes date should have higher priority 

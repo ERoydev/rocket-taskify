@@ -3,26 +3,28 @@ use sea_orm::*;
 
 
 use crate::entities::{prelude::*, task};
+use crate::entities::task::{Entity as TaskEntity, Model};
 
 use crate::interfaces::new_task::NewTask;
+use crate::interfaces::task_dto::TaskDTO;
 use crate::ErrorResponder;
 
 use rocket::{get, post};
 
 
 #[get("/tasks")]
-pub async fn get_tasks(db: &State<DatabaseConnection>) -> Json<Vec<String>> {
+pub async fn get_tasks(db: &State<DatabaseConnection>) -> Result<Json<Vec<TaskDTO>>, ErrorResponder> {
     let db = db as &DatabaseConnection;
     
-    let tasks = task::Entity::find()
+    let tasks = TaskEntity::find()
         .all(db)
         .await
-        .unwrap()
-        .into_iter()
-        .map(|b| b.title)
-        .collect::<Vec<String>>();
+        .map_err(Into::<ErrorResponder>::into)?;
 
-    Json(tasks)
+    
+    let task_dtos: Vec<TaskDTO> = tasks.into_iter().map(|task| TaskDTO::initialize(task)).collect();
+
+    Ok(Json(task_dtos))
 }
 
 #[post("/tasks", format="json", data="<new_task>")]
