@@ -1,17 +1,22 @@
 use sea_orm::*;
-use rocket::{serde::json::Json, State};
+use rocket::State;
+use rocket::get;
 
 mod setup;
 use setup::set_up_db;
+use rust_rocket_tasker::api::*;
 
-mod api;
-use api::new_task::NewTask;
+// mod api;
+// use api::task;
 
-mod error_responder;
-use error_responder::ErrorResponder;
+// mod interfaces;
+// use interfaces::new_task::NewTask;
 
-mod entities;
-use entities::{prelude::*, task};
+// mod error_responder;
+// use error_responder::ErrorResponder;
+
+// mod entities;
+// use entities::{prelude::*, task};
 
 
 // sea-orm-cli migrate generate create_tasks_table i have created my migration file
@@ -20,44 +25,6 @@ use entities::{prelude::*, task};
 
 #[macro_use] extern crate rocket;
 
-#[get("/tasks")]
-async fn get_tasks(db: &State<DatabaseConnection>) -> Json<Vec<String>> {
-    let db = db as &DatabaseConnection;
-    
-    let tasks = Task::find()
-        .all(db)
-        .await
-        .unwrap()
-        .into_iter()
-        .map(|b| b.title)
-        .collect::<Vec<String>>();
-
-    Json(tasks)
-}
-
-#[post("/tasks", format="json", data="<new_task>")]
-async fn create_task(db: &State<DatabaseConnection>, new_task: Json<NewTask>) -> Result<(), ErrorResponder> {
-    let db = db as &DatabaseConnection;
-
-    println!("{:?}", new_task);
-
-    let new_task_model = task::ActiveModel {
-        title: ActiveValue::Set(new_task.title.clone()),
-        description: ActiveValue::Set(new_task.description.clone()),
-        priority: ActiveValue::Set(new_task.priority.clone()),
-        due_date: ActiveValue::Set(new_task.due_date),
-        is_completed: ActiveValue::Set(new_task.is_completed),
-        id: NotSet,
-        ..Default::default()
-    };
-
-    Task::insert(new_task_model)
-        .exec(db)
-        .await
-        .map_err(Into::<ErrorResponder>::into)?;
-
-    Ok(())
-}
 
 #[get("/")]
 fn index(_connection: &State<DatabaseConnection>) -> &str {
