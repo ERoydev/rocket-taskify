@@ -1,12 +1,12 @@
 // This is my DATA TRANSFER OBJECT for Task Model
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::entities::task;
 use chrono::DateTime;
 
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct TaskDTO {
     pub id: i32,
     pub title: String,

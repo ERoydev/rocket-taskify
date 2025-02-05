@@ -154,3 +154,11 @@ Listen to me now i am working on tests/api_tests.rs on integration tests. I have
 
 https://github.com/rwf2/Rocket/blob/master/examples/testing/src/async_required.rs
 This is the Rocket example of how i should test can you guide me with this example how to test my API point for example for retrieving all tasks. In my original API points i use SeaORM with postgres but i wonder how to test it using mock DB data
+
+
+Okay from the testing case i got a response which is this code
+let response = client.get("/tasks").dispatch().await;
+i wonder how from this response i can get the data so i can check fields and so on should i deserialize ? give me ideas
+
+
+deserialization has failed and my code panicked .expect("valid JSON response"); it looks like response.into_json() is giving me invalid json and i cannot deserialize it how to debug and inspect this error

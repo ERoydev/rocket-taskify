@@ -9,8 +9,9 @@ mod tests {
     use sea_orm::{DatabaseBackend, DatabaseConnection, EntityTrait, MockDatabase}; // In order to use these i added in my Cargo.toml in sea_orm -D feature ["mock"] REMEMBER THIS!
     use rocket_taskify::entities::task;
     use rocket_taskify::api::*;
+    use rocket_taskify::interfaces::task_dto::TaskDTO; // I use this when i Deserialize task::Model because when my API return task::Model i convert it TaskDTO which change due_date property to a string instead of use i32, i64
 
-
+    // Setup function for creating rocket program in every test case
     fn rocket(db: DatabaseConnection) -> Rocket<Build> {
         rocket::build()
             .manage(db)
@@ -51,10 +52,15 @@ mod tests {
         let client = Client::tracked(rocket).await.expect("valid rocket instance");
 
         let response = client.get("/tasks").dispatch().await;
-            
-        // Assert the response status
+        
+        // Assert the response is with status 200 first
         assert_eq!(response.status(), Status::Ok);
-
+        
+        // Deserializing happens here, that's why i use TaskDTO because my API returns TaskDTO instead of task::Model type
+        let tasks: Vec<TaskDTO> = response.into_json().await.expect("valid response body");
+        
+        // Check if there are two tasks 
+        assert_eq!(2, tasks.len());
     }
     
     #[test]

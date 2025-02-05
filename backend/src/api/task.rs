@@ -14,21 +14,14 @@ use rocket::{get, post};
 
 #[get("/tasks")]
 pub async fn get_tasks(db: &State<DatabaseConnection>) -> Result<Json<Vec<TaskDTO>>, ErrorResponder> {
-
-    println!("Received request for tasks");
-
     let db = db as &DatabaseConnection;
-    
     let tasks = TaskEntity::find()
         .all(db)
         .await
         .map_err(Into::<ErrorResponder>::into)?;
-
-
-    println!("Found tasks {:?}", tasks);
     
+    // I iterate through Model and convert the it to TaskDTO where i change due_date to string and add new field (Have in mind when you try to deserialize the Model)
     let task_dtos: Vec<TaskDTO> = tasks.into_iter().map(|task| TaskDTO::initialize(task)).collect();
-
     Ok(Json(task_dtos))
 }
 
