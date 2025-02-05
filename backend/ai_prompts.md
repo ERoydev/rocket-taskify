@@ -110,3 +110,22 @@ Give me rust implemenatiton of converting Unix-Timestamp into normal format date
 
 
 Is it good approach to keep both converted due_date into String and the unix_timestamp in another property since i want to make bussiness logic for example the most closes date should have higher priority 
+
+
+Can guide me for some kind of approach to name my test functions in rust lets say i want to test get__tasks() and create_tasks() give me some naming concept to follow along
+
+
+When i run cargo test i dont see any prints on the console is there a way to see them
+
+
+When i have test with this
+let req = client.get("/tasks"); i recieve that i have no matchin routes for /tasks. Which is not true do i need to provide full adress like http://127.0.0.1:8000/tasks?
+
+
+If i use seaORM should i include db setup in the tests like i do in my main.rs
+
+
+Okay i have one problem with my tests in my test i need to establish_connection with DB with seaORM and create State with .manage(db) on my rocket::build() program initialization. The problem is that i need to do the same step for 5 tests which are going to run can i do this once and use it in every test
+
+
+Yes this worked but the problem still persist my problem is not for code repeating, but the way that i will create brand new initialization on every function with let rocket = rocket_with_db();. Can i avoid that or there is no sense in avoiding it. Since there is paradigm that every test should be separate and simplified. Is it good approach to keep it like that so my tests are going to be slower but keep the paradigm

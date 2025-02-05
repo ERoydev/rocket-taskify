@@ -3,7 +3,7 @@ use sea_orm::*;
 
 
 use crate::entities::{prelude::*, task};
-use crate::entities::task::{Entity as TaskEntity, Model};
+use crate::entities::task::Entity as TaskEntity;
 
 use crate::interfaces::new_task::NewTask;
 use crate::interfaces::task_dto::TaskDTO;

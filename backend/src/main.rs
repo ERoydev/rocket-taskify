@@ -2,8 +2,8 @@ use sea_orm::*;
 
 use rocket::{State, get};
 
-mod setup;
-use setup::set_up_db;
+pub mod setup;
+pub use setup::set_up_db;
 use rocket_taskify::api::*; // API Endpoints
 
 

@@ -2356,6 +2356,7 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "dotenvy",
+ "lazy_static",
  "migration",
  "rocket",
  "sea-orm 0.12.15",
