@@ -14,6 +14,9 @@ use rocket::{get, post};
 
 #[get("/tasks")]
 pub async fn get_tasks(db: &State<DatabaseConnection>) -> Result<Json<Vec<TaskDTO>>, ErrorResponder> {
+
+    println!("Received request for tasks");
+
     let db = db as &DatabaseConnection;
     
     let tasks = TaskEntity::find()
@@ -21,6 +24,8 @@ pub async fn get_tasks(db: &State<DatabaseConnection>) -> Result<Json<Vec<TaskDT
         .await
         .map_err(Into::<ErrorResponder>::into)?;
 
+
+    println!("Found tasks {:?}", tasks);
     
     let task_dtos: Vec<TaskDTO> = tasks.into_iter().map(|task| TaskDTO::initialize(task)).collect();
 

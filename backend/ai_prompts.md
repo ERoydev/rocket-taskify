@@ -129,3 +129,28 @@ Okay i have one problem with my tests in my test i need to establish_connection 
 
 
 Yes this worked but the problem still persist my problem is not for code repeating, but the way that i will create brand new initialization on every function with let rocket = rocket_with_db();. Can i avoid that or there is no sense in avoiding it. Since there is paradigm that every test should be separate and simplified. Is it good approach to keep it like that so my tests are going to be slower but keep the paradigm
+
+let req = client.get("/tasks").dispatch().await;
+error[E0277]: rocket::local::blocking::LocalResponse<'_> is not a future
+  --> tests\api_tests.rs:37:51
+   |
+37 |         let req = client.get("/tasks").dispatch().await;
+   |                                                  -^^^^^
+   |                                                  ||
+   |                                                  |rocket::local::blocking::LocalResponse<'_> is not a future
+   |                                                  help: remove the .await
+   |
+   = help: the trait std::future::Future is not implemented for rocket::local::blocking::LocalResponse<'_>
+   = note: rocket::local::blocking::LocalResponse<'_> must be a future or must implement IntoFuture to be awaited
+   = note: required for rocket::local::blocking::LocalResponse<'_> to implement std::future::IntoFuture
+
+
+use sea_orm::{DatabaseBackend, MockDatabase, Transaction,};
+this code is from documentation FROM seaORM i dont understand why MockDatabase does not exists when i try to import it
+
+
+Listen to me now i am working on tests/api_tests.rs on integration tests. I have a problem with fake DB and i want to kind of mock my DB to test my API functions 
+
+
+https://github.com/rwf2/Rocket/blob/master/examples/testing/src/async_required.rs
+This is the Rocket example of how i should test can you guide me with this example how to test my API point for example for retrieving all tasks. In my original API points i use SeaORM with postgres but i wonder how to test it using mock DB data

@@ -3,40 +3,58 @@
 
 #[cfg(test)]
 mod tests {
-    use rocket::local::blocking::Client;
-    use rocket::routes;
-    use rocket_taskify;
-    use rocket_taskify::rocket;
-    use rocket_taskify::api::get_tasks;
-    use rocket_taskify::setup::set_up_db;
+    use rocket::http::Status;
+    use rocket::local::asynchronous::Client;
+    use rocket::{routes, Build, Rocket};
+    use sea_orm::{DatabaseBackend, DatabaseConnection, EntityTrait, MockDatabase}; // In order to use these i added in my Cargo.toml in sea_orm -D feature ["mock"] REMEMBER THIS!
+    use rocket_taskify::entities::task;
+    use rocket_taskify::api::*;
 
-    async fn establish_test_connection() -> sea_orm::DatabaseConnection {
-        let db = match set_up_db().await {
-            Ok(db) => db,
-            Err(err) => panic!("{}", err),
-        };
-        db
+
+    fn rocket(db: DatabaseConnection) -> Rocket<Build> {
+        rocket::build()
+            .manage(db)
+            .mount("/", routes![get_tasks]) // Put your API's here
     }
 
-    fn rocket_with_db() -> rocket::Rocket<rocket::Build> {
-        let db = tokio::runtime::Runtime::new().unwrap().block_on(establish_test_connection());
+    #[rocket::async_test]
+    async fn it_should_return_all_tasks() {
+        // mock data
+        let mock_tasks = vec![
+            task::Model {
+                id: 1,
+                title: "Task 1".to_string(),
+                description: "Description 1".to_string(),
+                priority: "High".to_string(),
+                due_date: 1738706299,
+                is_completed: false,
+            },
+            task::Model {
+                id: 2,
+                title: "Task 2".to_string(),
+                description: "Description 2".to_string(),
+                priority: "Medium".to_string(),
+                due_date: 1738706399,
+                is_completed: false,
+            },
+        ];
 
-        let rocket = rocket::build().manage(db).mount("/", routes![get_tasks]); // Mount routes here
+        // Create a mock database with the prepared data
+        let db = MockDatabase::new(DatabaseBackend::Postgres)
+            .append_query_results(vec![mock_tasks.clone()])
+            .into_connection();
+        
+        // Build the Rocket instance with the mocked database
+        let rocket = rocket(db);
 
-        rocket
-    }
+        // Create client who sends requests
+        let client = Client::tracked(rocket).await.expect("valid rocket instance");
 
-    #[test]
-    fn it_should_return_all_tasks() {
-        let rocket = rocket_with_db();
-    
-        let client = Client::tracked(rocket).unwrap();
-    
-        let req = client.get("/tasks");
-    
-        let response = req.dispatch();
+        let response = client.get("/tasks").dispatch().await;
+            
+        // Assert the response status
+        assert_eq!(response.status(), Status::Ok);
 
-        println!("{:?}", response);
     }
     
     #[test]
