@@ -194,3 +194,11 @@ let response = client.post("/tasks").dispatch().await; Here the APi uses macro w
 
 My task insertion is returning
 InsertResult<ActiveModel> which i need to convert to my TaskDTO to return as json how to achieve this
+
+
+ let mock_tasks = mock_tasks_setup();
+        // Create a mock database with the prepared data
+        let db: DatabaseConnection = mock_db_setup(mock_tasks);
+        // Build the Rocket instance with the mocked database
+        let rocket = rocket(db);
+I want to check in my test case my db when i have created new task for example but how to approach such testing. When u give me code snippets dont give me side code please
