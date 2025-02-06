@@ -1,11 +1,18 @@
 import "../src/input.css";
+import Footer from "./components/Footer";
+import Header from "./components/Header";
+import Home from "./components/Home";
+import TaskList from "./components/Task/TaskList";
 
 function App() {
 
   return (
-    <>
-      <h1 className="text-3xl font-bold text-red-600">Hello Boy</h1>
-    </>
+    <div className="bg-white dark:bg-gray-900">
+      <Header />
+      <Home />
+      <TaskList />
+      <Footer />
+    </div>
   )
 }
 
