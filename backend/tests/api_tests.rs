@@ -154,7 +154,6 @@ mod tests {
         assert_eq!("Database error: Unable to complete the operation. Please try again later".to_string(), body);
     }
 
-
     #[rocket::async_test]
     async fn test_post_it_should_create_task_successfully() {
         let mock_tasks = mock_tasks_setup();
@@ -168,9 +167,9 @@ mod tests {
         let new_task = NewTask {
             title: "title".to_string(),
             description: "description".to_string(),
-            priority: "High".to_string(),
             due_date: 1738706299,   
-            is_completed: false
+            is_completed: false,
+            is_critical: false,
         };
 
         let client = Client::tracked(rocket).await.expect("valid rocket instance");
@@ -191,9 +190,9 @@ mod tests {
         let new_task = NewTask {
             title: "title".to_string(),
             description: "description".to_string(),
-            priority: "High".to_string(),
             due_date: 1738706299,   
-            is_completed: false
+            is_completed: false,
+            is_critical: false,
         };
 
         let client = Client::tracked(rocket).await.expect("valid rocket instance");
@@ -284,9 +283,9 @@ mod tests {
         let new_task = NewTask {
             title: "title".to_string(),
             description: "description".to_string(),
-            priority: "High".to_string(),
             due_date: 1738706299,   
-            is_completed: false
+            is_completed: false,
+            is_critical: false,
         };
 
         let client = Client::tracked(rocket).await.expect("valid rocket instance");
@@ -302,7 +301,7 @@ mod tests {
         assert_eq!(2, task.id);
         assert_eq!("title".to_string(), task.title);
         assert_eq!("description".to_string(), task.description);
-        assert_eq!("High".to_string(), task.priority);
+        assert_eq!("Expired".to_string(), task.priority);
         assert_eq!("04-02-25".to_string(), task.due_date);
         assert_eq!(false, task.is_completed);
         assert_eq!(1738706299, task.due_date_timestamp);

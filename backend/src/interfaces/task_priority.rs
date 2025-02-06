@@ -4,12 +4,13 @@ use crate::NewTask;
 
 
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum TaskPriorityLevel {
     Low,
     Medium,
     High,
-    Immediate
+    Immediate,
+    Expired
 }
 
 impl TaskPriorityLevel {
@@ -27,6 +28,7 @@ impl TaskPriorityLevel {
             TaskPriorityLevel::Medium => "Medium",
             TaskPriorityLevel::High => "High",
             TaskPriorityLevel::Immediate => "Immediate",
+            TaskPriorityLevel::Expired => "Expired",
         }
     }
 
@@ -37,13 +39,12 @@ impl TaskPriorityLevel {
         } else if model.is_critical {
             TaskPriorityLevel::Immediate
         } else {
-            Self::calculate_priority_based_on_due_date(model.due_date)
+            let now_timestamp: i64 = Local::now().timestamp(); // Generate current time
+            Self::calculate_priority_based_on_due_date(model.due_date, now_timestamp)
         }
-
     }
 
-    fn calculate_priority_based_on_due_date(due_date: i32) -> TaskPriorityLevel {
-        let now_timestamp: i64 = Local::now().timestamp();
+    pub fn calculate_priority_based_on_due_date(due_date: i32, now_timestamp: i64) -> TaskPriorityLevel {
         let due_date_timestamp: i64 = due_date as i64;
     
         let difference: i64 = due_date_timestamp - now_timestamp;
@@ -56,7 +57,9 @@ impl TaskPriorityLevel {
         // Else is LOW
     
         // Assign priority based on time difference
-        if difference <= IMMEDIATE_THRESHOLD {
+        if difference <= 0 {
+            return TaskPriorityLevel::Expired
+        } else if difference <= IMMEDIATE_THRESHOLD {
             return TaskPriorityLevel::Immediate 
         } else if difference <= HIGH_THRESHOLD {
             return TaskPriorityLevel::High

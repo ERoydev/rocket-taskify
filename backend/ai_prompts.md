@@ -205,3 +205,20 @@ I want to check in my test case my db when i have created new task for example b
 
 
 I need to implement business logic for priority i work with unix-timestamp. I have function that take now timestamp in the moment of function call() and there i will have passed argument with task.due_time. Guide me how to structure my priority system meaning if its very close i will have priority String that will be Imediate or something like that. Then if its more longer it will be High then Medium then Low. I need this time system to structure the logic
+
+
+let priority;
+    if new_task.is_completed {
+        priority = "Low".to_string();
+    } else if new_task.is_critical {
+        priority = "Immediate".to_string();
+    } else {
+        priority = calculate_priority_based_on_due_date(new_task.due_date);
+    }
+can i turn this into a match expression
+
+
+Can you show me in rocket framework how i can write simple tests to test functions
+
+
+i hasve test/api_test.rs where i test APIS how to name file who tests business logic
