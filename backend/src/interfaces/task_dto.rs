@@ -5,6 +5,8 @@ use serde::{Deserialize, Serialize};
 use crate::{entities::task, NewTask};
 use chrono::DateTime;
 
+use super::task_priority::TaskPriorityLevel;
+
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct TaskDTO {
@@ -17,20 +19,18 @@ pub struct TaskDTO {
     pub due_date_timestamp: i64,
 }
 
-
 pub enum ModelTypes {
     NewTask(NewTask), // Used to convert NewTask with task_id provided from outside to create TaskDTO
     TaskModel(task::Model), // Used from task::Model to create TaskDTO object
 }
 
-
 impl TaskDTO {
     pub fn initialize(model: ModelTypes, task_id: Option<i32>) -> TaskDTO {
-
         let task_id = task_id.unwrap_or_default();
         
         match model {
             ModelTypes::TaskModel(model) => {
+                // I use this when i Get all Tasks. I convert each Model into TaskDTO model to return
                 let converted_due_date = Self::convert_unix_timestamp(Some(model.due_date));
 
                 TaskDTO {
@@ -44,13 +44,15 @@ impl TaskDTO {
                 }
             }
             ModelTypes::NewTask(model) => {
-                let converted_due_date = Self::convert_unix_timestamp(Some(model.due_date));
+                // I use this when create a new task. I do priority calculations here
+                let converted_due_date: String = Self::convert_unix_timestamp(Some(model.due_date));
+                let priority = TaskPriorityLevel::get_priority(&model);
 
                 TaskDTO {
                     id: task_id,
                     title: model.title.clone(),
                     description: model.description.clone(),
-                    priority: model.priority.clone(),
+                    priority: priority,
                     due_date: converted_due_date,
                     is_completed: model.is_completed,
                     due_date_timestamp: model.due_date.into(),

@@ -202,3 +202,6 @@ InsertResult<ActiveModel> which i need to convert to my TaskDTO to return as jso
         // Build the Rocket instance with the mocked database
         let rocket = rocket(db);
 I want to check in my test case my db when i have created new task for example but how to approach such testing. When u give me code snippets dont give me side code please
+
+
+I need to implement business logic for priority i work with unix-timestamp. I have function that take now timestamp in the moment of function call() and there i will have passed argument with task.due_time. Guide me how to structure my priority system meaning if its very close i will have priority String that will be Imediate or something like that. Then if its more longer it will be High then Medium then Low. I need this time system to structure the logic
