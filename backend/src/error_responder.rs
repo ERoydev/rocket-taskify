@@ -13,7 +13,7 @@ Used to catch and handle errors for example when i create_task i return it with
 */
 
 
-#[derive(Responder)]
+#[derive(Responder,)]
 #[response(status = 500, content_type = "json")]
 pub struct ErrorResponder {
     message: String,
@@ -22,9 +22,9 @@ pub struct ErrorResponder {
 // The following impl's are for easy conversion of error types.
 
 impl From<DbErr> for ErrorResponder {
-    fn from(err: DbErr) -> ErrorResponder {
+    fn from(_err: DbErr) -> ErrorResponder {
         ErrorResponder {
-            message: err.to_string(),
+            message: "Database error: Unable to complete the operation. Please try again later".to_string(),
         }
     }
 }

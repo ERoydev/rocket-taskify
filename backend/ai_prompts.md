@@ -162,3 +162,27 @@ i wonder how from this response i can get the data so i can check fields and so 
 
 
 deserialization has failed and my code panicked .expect("valid JSON response"); it looks like response.into_json() is giving me invalid json and i cannot deserialize it how to debug and inspect this error
+
+
+In my testing. I have case that is going to catch error how to catch error
+
+
+In my testing. I have case that is going to catch error how to catch error. For example i want to cause this error by using db instance that is not working. So for example i use rocket in my clien where i pass rocket without .manage() state for DB is this good test ?
+
+
+in rust i have implemented my own ErrorResponder from this docs https://www.sea-ql.org/sea-orm-tutorial/ch02-03-error-handling.html check it out. And in my API point i have operation like this
+let tasks = TaskEntity::find()
+        .all(db)
+        .await
+        .map_err(Into::<ErrorResponder>::into)?; // EXPLAIN THIS
+Explain how the error maps to this ErrorResponder explain what happens maybe i something with seaOrm::DbErr explain how to use these 
+
+
+So using this how a test case should look 
+
+
+let response = client.get("/tasks").dispatch().await;
+This is returning 500 Server Error which is the behaviour i look for in the current test case how can i extract the error message from this ?
+
+
+https://www.sea-ql.org/sea-orm-tutorial/ch02-03-error-handling.html for this code i want to implement my custom logic for time for example when i have Server Error 500 to put my custom message there. In this ErrorResponder what i need to change to create this type mapping when it recieve some error like 500 Server error to return my own message

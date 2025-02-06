@@ -1,3 +1,4 @@
+use rocket::http::Status;
 use rocket::{serde::json::Json, State};
 use sea_orm::*;
 
@@ -15,10 +16,11 @@ use rocket::{get, post};
 #[get("/tasks")]
 pub async fn get_tasks(db: &State<DatabaseConnection>) -> Result<Json<Vec<TaskDTO>>, ErrorResponder> {
     let db = db as &DatabaseConnection;
+    
     let tasks = TaskEntity::find()
         .all(db)
         .await
-        .map_err(Into::<ErrorResponder>::into)?;
+        .map_err(Into::<ErrorResponder>::into)?; // EXPLAIN THIS
     
     // I iterate through Model and convert the it to TaskDTO where i change due_date to string and add new field (Have in mind when you try to deserialize the Model)
     let task_dtos: Vec<TaskDTO> = tasks.into_iter().map(|task| TaskDTO::initialize(task)).collect();

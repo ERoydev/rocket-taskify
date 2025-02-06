@@ -2234,6 +2234,7 @@ dependencies = [
 name = "rocket_taskify"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "chrono",
  "dotenvy",
  "lazy_static",
@@ -2242,6 +2243,7 @@ dependencies = [
  "sea-orm",
  "serde",
  "serde_json",
+ "thiserror 2.0.11",
  "tokio",
 ]
 
