@@ -2,19 +2,20 @@
 
 #[cfg(test)]
 mod tests {
+    use migration::cli;
     use rocket::http::Status;
     use rocket::local::asynchronous::Client;
     use rocket::{routes, Build, Rocket};
     use sea_orm::{DatabaseBackend, DatabaseConnection, MockDatabase}; // In order to use these i added in my Cargo.toml in sea_orm -D feature ["mock"] REMEMBER THIS!
     use rocket_taskify::entities::task;
-    use rocket_taskify::api::*;
+    use rocket_taskify::{api::*, NewTask};
     use rocket_taskify::interfaces::task_dto::TaskDTO; // I use this when i Deserialize task::Model because when my API return task::Model i convert it TaskDTO which change due_date property to a string instead of use i32, i64
 
     // Setup function for creating rocket program in every test case
     fn rocket(db: DatabaseConnection) -> Rocket<Build> {
         rocket::build()
             .manage(db)
-            .mount("/", routes![get_tasks]) // Put your API's here
+            .mount("/", routes![get_tasks, create_task]) // Put your API's here
     }
 
     // Setup func for mock_data
@@ -44,12 +45,12 @@ mod tests {
     // Setup mock database
     fn mock_db_setup(mock_tasks: Vec<task::Model>) -> DatabaseConnection {
         MockDatabase::new(DatabaseBackend::Postgres)
-            .append_query_results(vec![mock_tasks.clone()])
+            .append_query_results(vec![mock_tasks])
             .into_connection()
     }
 
     #[rocket::async_test]
-    async fn it_should_return_all_tasks() {
+    async fn test_get_it_should_return_all_tasks() {
         // mock data
         let mock_tasks = mock_tasks_setup();
 
@@ -75,7 +76,7 @@ mod tests {
     }
     
     #[rocket::async_test]
-    async fn it_should_return_empty_when_no_tasks() {
+    async fn test_get_it_should_return_empty_when_no_tasks() {
         let mock_tasks: Vec<task::Model> = vec![];
 
         let db: DatabaseConnection = mock_db_setup(mock_tasks);
@@ -99,7 +100,7 @@ mod tests {
     }
     
     #[rocket::async_test]
-    async fn it_should_return_tasks_with_correct_fields() {
+    async fn test_get_it_should_return_tasks_with_correct_fields() {
         let mock_tasks = mock_tasks_setup();
 
         let db: DatabaseConnection = mock_db_setup(mock_tasks);
@@ -135,7 +136,7 @@ mod tests {
     
 
     #[rocket::async_test]
-    async fn it_should_return_error() {
+    async fn test_get_it_should_return_error() {
         let db = MockDatabase::new(DatabaseBackend::Postgres)
         .append_query_errors(vec![])
         .into_connection();
@@ -146,13 +147,48 @@ mod tests {
 
         let response = client.get("/tasks").dispatch().await;
 
-        println!("RESPONSE: {:?}", response);
-
         assert_eq!(response.status(), Status::InternalServerError);
 
         let body = response.into_string().await.expect("valid response body");
         
         assert_eq!("Database error: Unable to complete the operation. Please try again later".to_string(), body);
+    }
+
+
+    #[rocket::async_test]
+    async fn test_post_it_should_create_one_task() {
+        let mock_tasks = mock_tasks_setup();
+
+        // Create a mock database with the prepared data
+        let db: DatabaseConnection = mock_db_setup(mock_tasks);
+        
+        // Build the Rocket instance with the mocked database
+        let rocket = rocket(db);
+
+        let new_task = NewTask {
+            title: "title".to_string(),
+            description: "description".to_string(),
+            priority: "High".to_string(),
+            due_date: 1738706299,   
+            is_completed: false
+        };
+
+        // // Create client who sends requests
+        let client = Client::tracked(rocket).await.expect("valid rocket instance");
+
+        let post_response = client.post("/tasks").json(&new_task).dispatch().await;
+
+        assert_eq!(post_response.status(), Status::Ok, "Expected the response to be with status 200, but its not");
+
+
+        println!("{:?}", post_response);
+        // let task: TaskDTO = post_response.into_json().await.expect("valid response body");
+
+        // println!("{:?}", task);
+        
+        // let get_response = client.get("/tasks").dispatch().await;
+
+        // println!("{:?}", get_response);
     }
 
 

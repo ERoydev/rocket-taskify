@@ -1,8 +1,7 @@
-use rocket::serde::Deserialize;
+use rocket::serde::{Deserialize, Serialize};
 
 
-#[derive(Deserialize)]
-#[derive(Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct NewTask {
     pub title: String,
     pub description: String,

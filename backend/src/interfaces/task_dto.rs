@@ -1,8 +1,8 @@
-// This is my DATA TRANSFER OBJECT for Task Model
+// This is my DATA TRANSFER OBJECT for Task Model. Idea is to simplify my data to provide in frontend clean representation
 
 use serde::{Deserialize, Serialize};
 
-use crate::entities::task;
+use crate::{entities::task, NewTask};
 use chrono::DateTime;
 
 
@@ -18,20 +18,46 @@ pub struct TaskDTO {
 }
 
 
+pub enum ModelTypes {
+    NewTask(NewTask), // Used to convert NewTask with task_id provided from outside to create TaskDTO
+    TaskModel(task::Model), // Used from task::Model to create TaskDTO object
+}
+
+
 impl TaskDTO {
-    pub fn initialize(model: task::Model) -> TaskDTO {
+    pub fn initialize(model: ModelTypes, task_id: Option<i32>) -> TaskDTO {
 
-        let converted_due_date = Self::convert_unix_timestamp(Some(model.due_date));
+        let task_id = task_id.unwrap_or_default();
+        
+        match model {
+            ModelTypes::TaskModel(model) => {
+                let converted_due_date = Self::convert_unix_timestamp(Some(model.due_date));
 
-        TaskDTO {
-            id: model.id,
-            title: model.title,
-            description: model.description,
-            priority: model.priority,
-            due_date: converted_due_date,
-            is_completed: model.is_completed,
-            due_date_timestamp: model.due_date.into(),
+                TaskDTO {
+                    id: model.id,
+                    title: model.title,
+                    description: model.description,
+                    priority: model.priority,
+                    due_date: converted_due_date,
+                    is_completed: model.is_completed,
+                    due_date_timestamp: model.due_date.into(),
+                }
+            }
+            ModelTypes::NewTask(model) => {
+                let converted_due_date = Self::convert_unix_timestamp(Some(model.due_date));
+
+                TaskDTO {
+                    id: task_id,
+                    title: model.title.clone(),
+                    description: model.description.clone(),
+                    priority: model.priority.clone(),
+                    due_date: converted_due_date,
+                    is_completed: model.is_completed,
+                    due_date_timestamp: model.due_date.into(),
+                }
+            }
         }
+
     }
 
     fn convert_unix_timestamp(timestamp: Option<i32>) -> String {

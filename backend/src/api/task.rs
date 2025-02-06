@@ -1,3 +1,4 @@
+use rocket::http::ext::IntoCollection;
 use rocket::http::Status;
 use rocket::{serde::json::Json, State};
 use sea_orm::*;
@@ -7,7 +8,7 @@ use crate::entities::{prelude::*, task};
 use crate::entities::task::Entity as TaskEntity;
 
 use crate::interfaces::new_task::NewTask;
-use crate::interfaces::task_dto::TaskDTO;
+use crate::interfaces::task_dto::{TaskDTO, ModelTypes};
 use crate::ErrorResponder;
 
 use rocket::{get, post};
@@ -23,12 +24,12 @@ pub async fn get_tasks(db: &State<DatabaseConnection>) -> Result<Json<Vec<TaskDT
         .map_err(Into::<ErrorResponder>::into)?; // EXPLAIN THIS
     
     // I iterate through Model and convert the it to TaskDTO where i change due_date to string and add new field (Have in mind when you try to deserialize the Model)
-    let task_dtos: Vec<TaskDTO> = tasks.into_iter().map(|task| TaskDTO::initialize(task)).collect();
+    let task_dtos: Vec<TaskDTO> = tasks.into_iter().map(|task| TaskDTO::initialize(ModelTypes::TaskModel(task), None)).collect();
     Ok(Json(task_dtos))
 }
 
 #[post("/tasks", format="json", data="<new_task>")]
-pub async fn create_task(db: &State<DatabaseConnection>, new_task: Json<NewTask>) -> Result<(), ErrorResponder> {
+pub async fn create_task(db: &State<DatabaseConnection>, new_task: Json<NewTask>) -> Result<Json<TaskDTO>, ErrorResponder> {
     let db = db as &DatabaseConnection;
 
     let new_task_model = task::ActiveModel {
@@ -41,10 +42,13 @@ pub async fn create_task(db: &State<DatabaseConnection>, new_task: Json<NewTask>
         ..Default::default()
     };
 
-    Task::insert(new_task_model)
+    let insert_result = Task::insert(new_task_model)
         .exec(db)
         .await
         .map_err(Into::<ErrorResponder>::into)?;
 
-    Ok(())
+
+    let task_dto = TaskDTO::initialize(ModelTypes::NewTask(new_task.into_inner()), Some(insert_result.last_insert_id));
+
+    Ok(Json(task_dto))
 }

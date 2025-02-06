@@ -186,3 +186,11 @@ This is returning 500 Server Error which is the behaviour i look for in the curr
 
 
 https://www.sea-ql.org/sea-orm-tutorial/ch02-03-error-handling.html for this code i want to implement my custom logic for time for example when i have Server Error 500 to put my custom message there. In this ErrorResponder what i need to change to create this type mapping when it recieve some error like 500 Server error to return my own message
+
+
+In my testing case now i task post 
+let response = client.post("/tasks").dispatch().await; Here the APi uses macro where it expects data=<new_task> meaning i need to pass NewTask Object which i have created i dont know how to pass with this
+
+
+My task insertion is returning
+InsertResult<ActiveModel> which i need to convert to my TaskDTO to return as json how to achieve this
