@@ -301,7 +301,7 @@ mod tests {
         assert_eq!(2, task.id);
         assert_eq!("title".to_string(), task.title);
         assert_eq!("description".to_string(), task.description);
-        assert_eq!("Expired".to_string(), task.priority);
+        assert_eq!("expired".to_string(), task.priority);
         assert_eq!("04-02-25".to_string(), task.due_date);
         assert_eq!(false, task.is_completed);
         assert_eq!(1738706299, task.due_date_timestamp);

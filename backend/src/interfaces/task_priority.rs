@@ -24,11 +24,11 @@ impl TaskPriorityLevel {
 
     fn level_string_representation(&self) -> &'static str {
         match self {
-            TaskPriorityLevel::Low => "Low",
-            TaskPriorityLevel::Medium => "Medium",
-            TaskPriorityLevel::High => "High",
-            TaskPriorityLevel::Immediate => "Immediate",
-            TaskPriorityLevel::Expired => "Expired",
+            TaskPriorityLevel::Low => "low",
+            TaskPriorityLevel::Medium => "medium",
+            TaskPriorityLevel::High => "high",
+            TaskPriorityLevel::Immediate => "immediate",
+            TaskPriorityLevel::Expired => "expired",
         }
     }
 
@@ -70,4 +70,14 @@ impl TaskPriorityLevel {
         }
     }
 
+    pub fn priority_order(p: &str) -> i32 {
+        match p {
+            "expired" => 1,
+            "low" => 2,
+            "medium" => 3,
+            "high" => 4,
+            "immediate" => 5,
+            _ => 6,
+        }
+    }
 }

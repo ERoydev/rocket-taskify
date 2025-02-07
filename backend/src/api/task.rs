@@ -1,4 +1,5 @@
 use rocket::{serde::json::Json, State};
+use rocket::{get, post};
 use sea_orm::*;
 
 
@@ -8,20 +9,38 @@ use crate::entities::task::Entity as TaskEntity;
 use crate::interfaces::new_task::NewTask;
 use crate::interfaces::task_dto::{TaskDTO, ModelTypes};
 use crate::interfaces::task_priority::TaskPriorityLevel;
+
 use crate::ErrorResponder;
+use crate::resources::base_sql::get_base_sql;
 
-use rocket::{get, post};
 
-
-#[get("/tasks")] // Todo retrive by due_date and priority
-pub async fn get_tasks(db: &State<DatabaseConnection>) -> Result<Json<Vec<TaskDTO>>, ErrorResponder> {
+#[get("/tasks?<sort>")] // Todo retrive by due_date and priority
+pub async fn get_tasks(sort: Option<String>, db: &State<DatabaseConnection>) -> Result<Json<Vec<TaskDTO>>, ErrorResponder> {
     let db = db as &DatabaseConnection;
-    
+
+    let base_sql = get_base_sql();
+
+    let order_clause = match sort {
+        Some(s) => s.to_lowercase(),
+        None => "%".to_string()
+    };
+
+    let sql_query = format!("{} WHERE priority ILIKE '{}' ORDER BY priority_order DESC, due_date ASC;", base_sql, order_clause); // This ensure to add priority=high if sort is provided in the request
+
     let tasks = TaskEntity::find()
-        .all(db)
-        .await
-        .map_err(Into::<ErrorResponder>::into)?; // EXPLAIN THIS
-    
+    // This Returns All tasks sorted by priority DESC then by due_date ASC
+    .from_raw_sql(Statement::from_sql_and_values(
+        DatabaseBackend::Postgres,
+        sql_query,
+        [],
+    ))
+    .all(db)
+    .await
+    .map_err(Into::<ErrorResponder>::into)?;
+
+
+
+
     // I iterate through Model and convert the it to TaskDTO where i change due_date to string and add new field (Have in mind when you try to deserialize the Model)
     let task_dtos: Vec<TaskDTO> = tasks.into_iter().map(|task| TaskDTO::initialize(ModelTypes::TaskModel(task), None)).collect();
     Ok(Json(task_dtos))

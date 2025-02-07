@@ -71,7 +71,7 @@ mod tests {
 
         let priority = TaskPriorityLevel::get_priority(&task_model);
 
-        assert_eq!("Low".to_string(), priority);
+        assert_eq!("low".to_string(), priority);
     }
 
     #[test]
@@ -82,7 +82,7 @@ mod tests {
 
         let priority = TaskPriorityLevel::get_priority(&task_model);
 
-        assert_eq!("Immediate".to_string(), priority);
+        assert_eq!("immediate".to_string(), priority);
     }
 
     #[test]
@@ -94,6 +94,6 @@ mod tests {
 
         let priority = TaskPriorityLevel::get_priority(&task_model);
 
-        assert_eq!("Low".to_string(), priority);
+        assert_eq!("low".to_string(), priority);
     }
 }

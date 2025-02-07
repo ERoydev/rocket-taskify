@@ -221,4 +221,23 @@ can i turn this into a match expression
 Can you show me in rocket framework how i can write simple tests to test functions
 
 
-i hasve test/api_test.rs where i test APIS how to name file who tests business logic
+i hasve test/api_test.rs where i test APIS how to name a module which is going to test business logic
+
+
+In rust how to order by rules. Can i create some kind of rule to order strings because i have like 'low', 'high' and so on and i want based on this rules to order objects ascending or descending. I have like objects with string value. 
+
+
+this is seaOrm
+.order_by_desc(TaskPriorityLevel::priority_order(task::Column::Priority))
+I want to do something like that because task::Column::Priority is 'low' or 'high' and i want to use function where i match value and return 1 or 2 or 3 in order to sort
+
+
+In postgres I builded my SQL Case and in the end i have order it successfully. The only thing i forgot was how to remove now that field that was used for ordering so i can return my clean data
+
+
+Okay can i do something to simplify my RAW SQL inside my API POINT because i dont like it staying there. What is used in those scenarios ?
+
+
+I have implemented my SQL i have one other problem since my API is
+#[get("/tasks?<sort>")]
+If i dont get sort thats good i have my solution. But if i take sort how to implement the logic without introducing another sql ?
