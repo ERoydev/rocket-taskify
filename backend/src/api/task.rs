@@ -1,5 +1,5 @@
 use rocket::{serde::json::Json, State};
-use rocket::{get, post};
+use rocket::{delete, get, post};
 use sea_orm::*;
 
 
@@ -38,9 +38,6 @@ pub async fn get_tasks(sort: Option<String>, db: &State<DatabaseConnection>) -> 
     .await
     .map_err(Into::<ErrorResponder>::into)?;
 
-
-
-
     // I iterate through Model and convert the it to TaskDTO where i change due_date to string and add new field (Have in mind when you try to deserialize the Model)
     let task_dtos: Vec<TaskDTO> = tasks.into_iter().map(|task| TaskDTO::initialize(ModelTypes::TaskModel(task), None)).collect();
     Ok(Json(task_dtos))
@@ -67,8 +64,34 @@ pub async fn create_task(db: &State<DatabaseConnection>, new_task: Json<NewTask>
         .await
         .map_err(Into::<ErrorResponder>::into)?;
 
-
     let task_dto = TaskDTO::initialize(ModelTypes::NewTask(new_task.into_inner()), Some(insert_result.last_insert_id));
-
     Ok(Json(task_dto))
+}
+
+// #[get("/tasks/<id>")]
+// pub async fn get_task_by_id(id: i32, db: &State<DatabaseConnection>) -> Result<String, ErrorResponder> {
+
+// }
+
+#[delete("/tasks/<id>")]
+pub async fn delete_task(id: i32, db: &State<DatabaseConnection>) -> Result<String, ErrorResponder> {
+    let db = db as &DatabaseConnection;
+
+    let task = TaskEntity::find_by_id(id)
+        .one(db)
+        .await?;
+
+    match task {
+        Some(_task) => {
+            TaskEntity::delete_by_id(id)
+                .exec(db)
+                .await?;
+
+            Ok("Task successfully deleted.".to_string())
+        }
+        None => {
+            return Err(ErrorResponder::from("There is no task with this id"))
+        }
+    }
+    
 }

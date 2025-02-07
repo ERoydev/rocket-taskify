@@ -37,7 +37,7 @@ impl From<String> for ErrorResponder {
 
 impl From<&str> for ErrorResponder {
     fn from(str: &str) -> ErrorResponder {
-        str.to_owned().into()
+        ErrorResponder { message: str.to_owned().into() }
     }
 }
 

@@ -4,7 +4,7 @@ use rocket::{State, get};
 
 pub mod setup;
 pub use setup::set_up_db;
-use rocket_taskify::api::*; // API Endpoints
+use rocket_taskify::api::{task::delete_task, *}; // API Endpoints
 
 
 /// SeaORM COMMAND INSTRUCTIONS -------------------------------------------
@@ -33,5 +33,5 @@ async fn rocket() -> _ {
 
     rocket::build()
         .manage(db)
-        .mount("/", routes![index, get_tasks, create_task])
+        .mount("/", routes![index, get_tasks, create_task, delete_task])
 }
