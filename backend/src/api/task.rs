@@ -173,3 +173,29 @@ pub async fn delete_task(id: i32, db: &State<DatabaseConnection>) -> Result<Json
     }
     
 }
+
+
+#[post("/tasks/complete/<id>")]
+pub async fn complete_task(id: i32, db: &State<DatabaseConnection>) -> Result<Json<TaskDTO>, ErrorResponder> {
+    let db = db as &DatabaseConnection;
+
+    let task = TaskEntity::find_by_id(id)
+        .one(db)
+        .await
+        .map_err(Into::<ErrorResponder>::into)?
+        .ok_or_else(|| ErrorResponder::from("You cannot complete a task which doesn't exists, try using another task id!"))?;
+
+
+    let mut task_active_model: task::ActiveModel = task.into();
+    task_active_model.is_completed = Set(true);
+
+    let priority = get_priority_level(task_active_model.is_completed.clone().unwrap(), false, task_active_model.due_date.clone().unwrap()); // Because when it is completed i cannot be critical anymore
+
+    task_active_model.priority = Set(priority);
+
+    let task: task::Model = task_active_model.update(db).await?;
+
+    let task_dto: TaskDTO = TaskDTO::initialize(ModelTypes::TaskModel(task), None);
+
+    Ok(Json(task_dto))
+}

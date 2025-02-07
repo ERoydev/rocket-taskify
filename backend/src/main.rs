@@ -19,11 +19,6 @@ use rocket_taskify::api::task::*; // API Endpoints
 #[macro_use] extern crate rocket;
 
 
-#[get("/")] // Initial request TODO: Remove when frontend is implemented
-fn index(_connection: &State<DatabaseConnection>) -> &str {
-    "Hello, World"
-}
-
 #[launch]
 async fn rocket() -> _ {
     let db = match set_up_db().await {
@@ -33,5 +28,13 @@ async fn rocket() -> _ {
 
     rocket::build()
         .manage(db)
-        .mount("/", routes![index, get_tasks, create_task, delete_task, get_task_by_id, get_tasks_by_completion_status, update_task])
+        .mount("/", routes![
+        get_tasks, 
+        create_task, 
+        delete_task, 
+        get_task_by_id, 
+        get_tasks_by_completion_status, 
+        update_task,
+        complete_task,
+        ])
 }
