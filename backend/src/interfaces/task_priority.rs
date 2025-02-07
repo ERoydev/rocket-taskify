@@ -1,11 +1,30 @@
 use chrono::Local;
 
-use crate::NewTask;
+/*
+    This module is created to handle all priority logic for the tasks;
+    It is designed to be encapsulated and used outside only with get_priority_level() function
 
+    With test cases bellow
+
+*/
+
+pub fn get_priority_level(is_completed: bool, is_critical: bool, due_date: i32) -> String {
+    let priority_instance: TaskPriority = TaskPriority::new(is_completed, is_critical, due_date);
+    let priority: String = TaskPriority::get_priority_level(priority_instance);
+    priority
+}
+
+// ENCAPSULATED LOGIC BELLOW
+#[derive(Clone, Copy, Debug, PartialEq)]
+struct TaskPriority {
+    is_completed: bool,
+    is_critical: bool,
+    due_date: i32
+}
 
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub enum TaskPriorityLevel {
+enum TaskPriorityLevel {
     Low,
     Medium,
     High,
@@ -13,34 +32,41 @@ pub enum TaskPriorityLevel {
     Expired,
 }
 
-impl TaskPriorityLevel {
-    pub fn get_priority(model: &NewTask) -> String {
-        // Get Priority Level STRING
-        let priority_level: TaskPriorityLevel = Self::get_priority_level(model); 
-        let priority = priority_level.level_string_representation().to_string(); //Priority Level STRING
-
-        priority
+impl TaskPriority {
+    fn new(is_completed: bool, is_critical: bool, due_date: i32) -> TaskPriority  {
+        let instance = TaskPriority {
+            is_completed,
+            is_critical,
+            due_date
+        };
+        instance
     }
 
-    fn level_string_representation(&self) -> &'static str {
-        match self {
+    fn get_priority_level(priority_instance: TaskPriority) -> String {
+        let priority_level: TaskPriorityLevel;
+
+        if priority_instance.is_completed {
+            priority_level = TaskPriorityLevel::Low
+
+        } else if priority_instance.is_critical {
+            priority_level = TaskPriorityLevel::Immediate
+
+        } else {
+            let now_timestamp: i64 = Local::now().timestamp(); // Generate current time
+            priority_level = Self::calculate_priority_based_on_due_date(priority_instance.due_date, now_timestamp)
+        }
+
+        let priority_string: String = Self::level_string_representation(priority_level).to_string();
+        priority_string
+    }
+
+    fn level_string_representation(priority_level: TaskPriorityLevel) -> &'static str {
+        match priority_level {
             TaskPriorityLevel::Low => "low",
             TaskPriorityLevel::Medium => "medium",
             TaskPriorityLevel::High => "high",
             TaskPriorityLevel::Immediate => "immediate",
             TaskPriorityLevel::Expired => "expired",
-        }
-    }
-
-    fn get_priority_level(model: &NewTask) -> TaskPriorityLevel {
-        // Get Priority Level Status
-        if model.is_completed {
-            TaskPriorityLevel::Low
-        } else if model.is_critical {
-            TaskPriorityLevel::Immediate
-        } else {
-            let now_timestamp: i64 = Local::now().timestamp(); // Generate current time
-            Self::calculate_priority_based_on_due_date(model.due_date, now_timestamp)
         }
     }
 
@@ -69,15 +95,102 @@ impl TaskPriorityLevel {
             return TaskPriorityLevel::Low
         }
     }
+}
 
-    pub fn priority_order(p: &str) -> i32 {
-        match p {
-            "expired" => 1,
-            "low" => 2,
-            "medium" => 3,
-            "high" => 4,
-            "immediate" => 5,
-            _ => 6,
+
+#[cfg(test)]
+mod tests {
+    use crate::NewTask;
+    use super::*;
+
+    const INITIAL_TIMESTAMP: i64 = 1738859415; // Used to test Priority logic
+
+    fn setup_new_task() -> NewTask {
+        NewTask {
+            title: "title".to_string(),
+            description: "description".to_string(),
+            due_date: 1738859415,
+            is_completed: false,
+            is_critical: false,
         }
+    }
+
+    #[test]
+    fn test_priority_low_should_be_valid() {
+        let task_due_date = 1739200000;
+
+        let priority = TaskPriority::calculate_priority_based_on_due_date(task_due_date, INITIAL_TIMESTAMP);
+
+        assert_eq!(TaskPriorityLevel::Low, priority);
+    }
+
+    #[test]
+    fn test_priority_medium_should_be_valid() {
+        let task_due_date = 1739100000; // Medium
+
+        let priority = TaskPriority::calculate_priority_based_on_due_date(task_due_date, INITIAL_TIMESTAMP);
+
+        assert_eq!(TaskPriorityLevel::Medium, priority);
+    }
+
+    #[test]
+    fn test_priority_high_should_be_valid() {
+        let task_due_date = 1739000000; // High
+
+        let priority = TaskPriority::calculate_priority_based_on_due_date(task_due_date, INITIAL_TIMESTAMP);
+
+        assert_eq!(TaskPriorityLevel::High, priority);
+    }
+
+    #[test]
+    fn test_priority_immediate_should_be_valid() {
+        let task_due_date = 1738859999; // Immediate
+
+        let priority = TaskPriority::calculate_priority_based_on_due_date(task_due_date, INITIAL_TIMESTAMP);
+
+        assert_eq!(TaskPriorityLevel::Immediate, priority);
+    }
+
+    #[test]
+    fn test_priority_expired_should_be_valid() {
+        let task_due_date = 1738858415; // Expired
+
+        let priority = TaskPriority::calculate_priority_based_on_due_date(task_due_date, INITIAL_TIMESTAMP);
+
+        assert_eq!(TaskPriorityLevel::Expired, priority);
+    }
+
+    #[test]
+    fn test_priority_when_is_completed_returns_low_priority() {
+        let mut task_model = setup_new_task();
+
+        task_model.is_completed = true;
+
+        let priority = get_priority_level(task_model.is_completed, task_model.is_critical, task_model.due_date);
+
+        assert_eq!("low".to_string(), priority);
+    }
+
+    #[test]
+    fn test_priority_when_is_critical_returns_immediate_priority() {
+        let mut task_model = setup_new_task();
+
+        task_model.is_critical = true;
+
+        let priority = get_priority_level(task_model.is_completed, task_model.is_critical, task_model.due_date);
+
+        assert_eq!("immediate".to_string(), priority);
+    }
+
+    #[test]
+    fn test_priority_when_is_completed_and_is_critial_both_returns_low_priority() {
+        let mut task_model = setup_new_task();
+
+        task_model.is_critical = true;
+        task_model.is_completed = true;
+
+        let priority = get_priority_level(task_model.is_completed, task_model.is_critical, task_model.due_date);
+
+        assert_eq!("low".to_string(), priority);
     }
 }

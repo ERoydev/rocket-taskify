@@ -245,3 +245,9 @@ If i dont get sort thats good i have my solution. But if i take sort how to impl
 
 #[get("/tasks?filter=isCompleted&value=false")]
 How to do API liket hat in rust rocket 
+
+
+Give me guide how to implement Async priority recalculation on the backend on rust rocket framework. Give me ideas with time set for example every 10 minutes i fetch them or other approach that is better than this.
+
+
+How to calculate if my priority calculation is expensive. How to see that

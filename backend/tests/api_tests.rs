@@ -1,21 +1,24 @@
 // cargo test -- --nocapture => Allow me to see everything printed during the test run, including println!
 
+
 #[cfg(test)]
 mod tests {
     use rocket::http::Status;
     use rocket::local::asynchronous::Client;
     use rocket::{routes, Build, Rocket};
+    use rocket_taskify::api::task::*;
     use sea_orm::{DatabaseBackend, DatabaseConnection, MockDatabase}; // In order to use these i added in my Cargo.toml in sea_orm -D feature ["mock"] REMEMBER THIS!
     use rocket_taskify::entities::task;
-    use rocket_taskify::{api::*, NewTask};
+    use rocket_taskify::NewTask;
     use rocket_taskify::interfaces::task_dto::TaskDTO;
     use serde::Serialize;
+    use sea_orm::*;
 
     // Setup function for creating rocket program in every test case
     fn rocket(db: DatabaseConnection) -> Rocket<Build> {
         rocket::build()
             .manage(db)
-            .mount("/", routes![get_tasks, create_task]) // Put your API's here
+            .mount("/", routes![get_tasks, create_task, delete_task]) // Put your API's here
     }
 
     // Setup func for mock_data
@@ -25,7 +28,7 @@ mod tests {
                 id: 1,
                 title: "Walk The Dog".to_string(),
                 description: "walk the dog".to_string(),
-                priority: "High".to_string(),
+                priority: "high".to_string(),
                 due_date: 1738706299, // 04-02-25 when converted to TaskDTO
                 is_completed: false,
             },
@@ -33,9 +36,25 @@ mod tests {
                 id: 2,
                 title: "Wash The Dishes".to_string(),
                 description: "wash the dishes".to_string(),
-                priority: "Medium".to_string(),
+                priority: "medium".to_string(),
                 due_date: 1838706299, // 07-04-28
                 is_completed: false,
+            },
+            task::Model {
+                id: 3,
+                title: "Workout".to_string(),
+                description: "workout".to_string(),
+                priority: "low".to_string(),
+                due_date: 1838706299, // 07-04-28
+                is_completed: false,
+            },
+            task::Model {
+                id: 4,
+                title: "Completed".to_string(),
+                description: "completed".to_string(),
+                priority: "low".to_string(),
+                due_date: 1838706299, // 07-04-28
+                is_completed: true,
             },
         ];
 
@@ -46,6 +65,24 @@ mod tests {
     fn mock_db_setup(mock_tasks: Vec<task::Model>) -> DatabaseConnection {
         MockDatabase::new(DatabaseBackend::Postgres)
             .append_query_results(vec![mock_tasks])
+            .append_exec_results([
+                MockExecResult {
+                    last_insert_id: 1,
+                    rows_affected: 1,
+                },
+                MockExecResult {
+                    last_insert_id: 2,
+                    rows_affected: 1,
+                },
+                MockExecResult {
+                    last_insert_id: 3,
+                    rows_affected: 1,
+                },
+                MockExecResult {
+                    last_insert_id: 4,
+                    rows_affected: 1,
+                },
+            ])
             .into_connection()
     }
 
@@ -72,7 +109,7 @@ mod tests {
         let tasks: Vec<TaskDTO> = response.into_json().await.expect("valid response body");
         
         // Check if there are two tasks 
-        assert_eq!(2, tasks.len(), "Expected to have 2 tasks, but its false");
+        assert_eq!(4, tasks.len(), "Expected to have 2 tasks, but its false");
     }
     
     #[rocket::async_test]
@@ -121,14 +158,14 @@ mod tests {
 
         assert_eq!("Walk The Dog", tasks[0].title);
         assert_eq!("walk the dog", tasks[0].description);
-        assert_eq!("High", tasks[0].priority);
+        assert_eq!("high", tasks[0].priority);
         assert_eq!("04-02-25", tasks[0].due_date);
         assert!(!tasks[0].is_completed);
         assert_eq!(1738706299, tasks[0].due_date_timestamp);
 
         assert_eq!("Wash The Dishes", tasks[1].title);
         assert_eq!("wash the dishes", tasks[1].description);
-        assert_eq!("Medium", tasks[1].priority);
+        assert_eq!("medium", tasks[1].priority);
         assert_eq!("07-04-28", tasks[1].due_date);
         assert!(!tasks[1].is_completed);
         assert_eq!(1838706299, tasks[1].due_date_timestamp);
@@ -154,8 +191,9 @@ mod tests {
         assert_eq!("Database error: Unable to complete the operation. Please try again later".to_string(), body);
     }
 
+
     #[rocket::async_test]
-    async fn test_post_it_should_create_task_successfully() {
+    async fn test_post_tasks_it_should_create_task_successfully() {
         let mock_tasks = mock_tasks_setup();
 
         // Create a mock database with the prepared data
@@ -180,7 +218,7 @@ mod tests {
     }
 
     #[rocket::async_test]
-    async fn test_post_it_should_return_database_error() {
+    async fn test_post_tasks_it_should_return_database_error() {
         let db = MockDatabase::new(DatabaseBackend::Postgres)
         .append_query_errors(vec![])
         .into_connection();
@@ -207,7 +245,7 @@ mod tests {
     }
 
     #[rocket::async_test]
-    async fn test_post_tasks_with_wrong_entity_type_returns_unprocessable_entity_error() {
+    async fn test_post_tasks_tasks_with_wrong_entity_type_returns_unprocessable_entity_error() {
         let db = MockDatabase::new(DatabaseBackend::Postgres)
         .append_query_errors(vec![])
         .into_connection();
@@ -296,9 +334,7 @@ mod tests {
 
         let task: TaskDTO = post_response.into_json().await.expect("valid response body");
 
-        println!("{:?}", task);
-
-        assert_eq!(2, task.id);
+        assert_eq!(4, task.id);
         assert_eq!("title".to_string(), task.title);
         assert_eq!("description".to_string(), task.description);
         assert_eq!("expired".to_string(), task.priority);
@@ -307,6 +343,39 @@ mod tests {
         assert_eq!(1738706299, task.due_date_timestamp);
     }
 
+    #[rocket::async_test]
+    async fn it_should_delete_task_by_id() {
+        let mock_tasks = mock_tasks_setup();
+        let db: DatabaseConnection = mock_db_setup(mock_tasks);
+        let rocket = rocket(db);
+    
+        let client = Client::tracked(rocket).await.expect("valid rocket instance");
+
+        let response = client.delete("/tasks/1").dispatch().await;
+  
+        assert_eq!(response.status(), rocket::http::Status::Ok);
+        
+    }
+
+
+    #[rocket::async_test]
+    async fn it_should_verify_task_is_deleted() {
+        let mock_tasks = mock_tasks_setup();
+        let db: DatabaseConnection = mock_db_setup(mock_tasks);
+        let rocket = rocket(db);
+
+        let client = Client::tracked(rocket).await.expect("valid rocket instance");
+
+        // Perform a DELETE request for task with ID = 1
+        let response = client.delete("/tasks/1").dispatch().await;
+
+        assert_eq!(response.status(), rocket::http::Status::Ok);
+
+        let respone_json: String = response.into_json().await.expect("Valid json body");
+
+        assert_eq!("Task successfully deleted.", respone_json);
+    }
+    
 }
 
 

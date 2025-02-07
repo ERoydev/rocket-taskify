@@ -33,5 +33,5 @@ async fn rocket() -> _ {
 
     rocket::build()
         .manage(db)
-        .mount("/", routes![index, get_tasks, create_task, delete_task, get_task_by_id, get_completed_tasks])
+        .mount("/", routes![index, get_tasks, create_task, delete_task, get_task_by_id, get_tasks_by_completion_status, update_task])
 }

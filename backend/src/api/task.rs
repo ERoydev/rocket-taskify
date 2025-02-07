@@ -1,7 +1,5 @@
-use std::iter::FilterMap;
-
 use rocket::{serde::json::Json, State};
-use rocket::{delete, get, post};
+use rocket::{delete, get, post, put};
 use sea_orm::*;
 
 
@@ -10,7 +8,7 @@ use crate::entities::task::Entity as TaskEntity;
 
 use crate::interfaces::new_task::NewTask;
 use crate::interfaces::task_dto::{TaskDTO, ModelTypes};
-use crate::interfaces::task_priority::TaskPriorityLevel;
+use crate::interfaces::task_priority::get_priority_level;
 
 use crate::ErrorResponder;
 use crate::resources::base_sql::get_base_sql;
@@ -42,15 +40,20 @@ pub async fn get_tasks(sort: Option<String>, db: &State<DatabaseConnection>) -> 
     .await
     .map_err(Into::<ErrorResponder>::into)?;
 
+    /* Note: This is inefficient because i iterate through all tasks to initialize them in Task Struct and could be very slow if records where 1 million for example. 
+        + But since its Task application this isn't big problem, because every user will request his own tasks which is aren't going to be even above 100.
+        + Otherwise i could fix my problem using DB Stored Procedure to do all priority calculations and unix-timestamp conversion.
+    */ 
     // I iterate through Model and convert the it to TaskDTO where i change due_date to string and add new field (Have in mind when you try to deserialize the Model)
     let task_dtos: Vec<TaskDTO> = tasks.into_iter().map(|task| TaskDTO::initialize(ModelTypes::TaskModel(task), None)).collect();
+
     Ok(Json(task_dtos))
 }
 
 
 // GET /tasks?filter=isCompleted&value=true Get task by completion property
 #[get("/tasks?<filter>&<value>")]
-pub async fn get_completed_tasks(filter: String, value: String, db: &State<DatabaseConnection>) -> Result<Json<Vec<TaskDTO>>, ErrorResponder> {
+pub async fn get_tasks_by_completion_status(filter: String, value: String, db: &State<DatabaseConnection>) -> Result<Json<Vec<TaskDTO>>, ErrorResponder> {
     let db = db as &DatabaseConnection;
     
     let value_bool = match value.to_lowercase().as_str() {
@@ -69,7 +72,6 @@ pub async fn get_completed_tasks(filter: String, value: String, db: &State<Datab
     let task_dto: Vec<TaskDTO> = tasks.into_iter().map(|task| TaskDTO::initialize(ModelTypes::TaskModel(task), None)).collect();
     Ok(Json(task_dto))
 }
-
 
 
 // GET TASK BY ID
@@ -98,7 +100,7 @@ pub async fn get_task_by_id(id: i32, db: &State<DatabaseConnection>) -> Result<J
 pub async fn create_task(db: &State<DatabaseConnection>, new_task: Json<NewTask>) -> Result<Json<TaskDTO>, ErrorResponder> {
     let db = db as &DatabaseConnection;
 
-    let priority = TaskPriorityLevel::get_priority(&new_task); // Get priority String representation
+    let priority = get_priority_level(new_task.is_completed, new_task.is_critical, new_task.due_date);
 
     let new_task_model = task::ActiveModel {
         title: ActiveValue::Set(new_task.title.clone()),
@@ -120,14 +122,42 @@ pub async fn create_task(db: &State<DatabaseConnection>, new_task: Json<NewTask>
 }
 
 
+#[put("/tasks", format="json", data="<updated_task>")]
+pub async fn update_task(db: &State<DatabaseConnection>, updated_task: Json<TaskDTO>) -> Result<Json<TaskDTO>, ErrorResponder> {
+    let db = db as &DatabaseConnection;
+
+    let priority = get_priority_level(updated_task.is_completed, updated_task.is_critical, updated_task.due_date_timestamp as i32);
+
+    let updated_task_model = task::ActiveModel {
+        title: ActiveValue::Set(updated_task.title.clone()),
+        description: ActiveValue::Set(updated_task.description.clone()),
+        priority: ActiveValue::Set(priority), // Todo logic
+        due_date: ActiveValue::Set(updated_task.due_date_timestamp as i32),
+        is_completed: ActiveValue::Set(updated_task.is_completed),
+        id: ActiveValue::Set(updated_task.id),
+        ..Default::default()
+    };
+
+    let task_model = updated_task_model
+        .update(db)
+        .await
+        .map_err(Into::<ErrorResponder>::into)?;
+
+    let task_dto: TaskDTO = TaskDTO::initialize(ModelTypes::TaskModel(task_model), None);
+
+    Ok(Json(task_dto))
+}
+
+
 #[delete("/tasks/<id>")]
-pub async fn delete_task(id: i32, db: &State<DatabaseConnection>) -> Result<String, ErrorResponder> {
+pub async fn delete_task(id: i32, db: &State<DatabaseConnection>) -> Result<Json<String>, ErrorResponder> {
 
     let db = db as &DatabaseConnection;
 
     let task = TaskEntity::find_by_id(id)
         .one(db)
-        .await?;
+        .await
+        .map_err(Into::<ErrorResponder>::into)?;
 
     match task {
         Some(_task) => {
@@ -135,7 +165,7 @@ pub async fn delete_task(id: i32, db: &State<DatabaseConnection>) -> Result<Stri
                 .exec(db)
                 .await?;
 
-            Ok("Task successfully deleted.".to_string())
+            Ok(Json("Task successfully deleted.".to_string()))
         }
         None => {
             return Err(ErrorResponder::from("There is no task with this id"))

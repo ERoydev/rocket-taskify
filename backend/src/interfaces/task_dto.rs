@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::{entities::task, NewTask};
 use chrono::DateTime;
 
-use super::task_priority::TaskPriorityLevel;
+use super::task_priority::get_priority_level;
 
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -16,6 +16,7 @@ pub struct TaskDTO {
     pub priority: String,
     pub due_date: String, // i use UNIX-Timestamp
     pub is_completed: bool,
+    pub is_critical: bool, // If user update
     pub due_date_timestamp: i64,
 }
 
@@ -40,13 +41,14 @@ impl TaskDTO {
                     priority: model.priority,
                     due_date: converted_due_date,
                     is_completed: model.is_completed,
+                    is_critical: false,
                     due_date_timestamp: model.due_date.into(),
                 }
             }
             ModelTypes::NewTask(model) => {
                 // I use this when create a new task. I do priority calculations here
                 let converted_due_date: String = Self::convert_unix_timestamp(Some(model.due_date));
-                let priority = TaskPriorityLevel::get_priority(&model);
+                let priority = get_priority_level(model.is_completed, model.is_critical, model.due_date);
 
                 TaskDTO {
                     id: task_id,
@@ -55,11 +57,11 @@ impl TaskDTO {
                     priority: priority,
                     due_date: converted_due_date,
                     is_completed: model.is_completed,
+                    is_critical: model.is_critical,
                     due_date_timestamp: model.due_date.into(),
                 }
             }
         }
-
     }
 
     fn convert_unix_timestamp(timestamp: Option<i32>) -> String {
