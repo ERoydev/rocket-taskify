@@ -16,7 +16,7 @@ Used to catch and handle errors for example when i create_task i return it with
 #[derive(Responder,)]
 #[response(status = 500, content_type = "json")]
 pub struct ErrorResponder {
-    message: String,
+    message: String
 }
 
 // The following impl's are for easy conversion of error types.

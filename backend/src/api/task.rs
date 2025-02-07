@@ -68,14 +68,30 @@ pub async fn create_task(db: &State<DatabaseConnection>, new_task: Json<NewTask>
     Ok(Json(task_dto))
 }
 
-// #[get("/tasks/<id>")]
-// pub async fn get_task_by_id(id: i32, db: &State<DatabaseConnection>) -> Result<String, ErrorResponder> {
+#[get("/tasks/<id>")]
+pub async fn get_task_by_id(id: i32, db: &State<DatabaseConnection>) -> Result<Json<TaskDTO>, ErrorResponder> {
+    let db = db  as &DatabaseConnection;
 
-// }
+    let task = TaskEntity::find_by_id(id)
+        .one(db)
+        .await?;
+
+    match task {
+        Some(task) => {
+            let task_dto: TaskDTO = TaskDTO::initialize(ModelTypes::TaskModel(task), None);
+
+            return Ok(Json(task_dto))
+        }
+        None => {
+            return Err(ErrorResponder::from("There is no task with this id"))
+        }
+    }
+}
 
 #[delete("/tasks/<id>")]
 pub async fn delete_task(id: i32, db: &State<DatabaseConnection>) -> Result<String, ErrorResponder> {
     let db = db as &DatabaseConnection;
+
 
     let task = TaskEntity::find_by_id(id)
         .one(db)
