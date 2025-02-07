@@ -1,3 +1,4 @@
+use rocket::futures::{FutureExt, TryFutureExt};
 use rocket::{serde::json::Json, State};
 use rocket::{delete, get, post, put};
 use sea_orm::*;
@@ -199,3 +200,13 @@ pub async fn complete_task(id: i32, db: &State<DatabaseConnection>) -> Result<Js
 
     Ok(Json(task_dto))
 }
+
+// #[post("/tasks/update_priority")]
+// pub async fn update_all_tasks_priority(db: &State<DatabaseConnection>) -> Result<(), ErrorResponder> {
+//     let db = db as &DatabaseConnection;
+
+
+
+
+//     Ok(())
+// }

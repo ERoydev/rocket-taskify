@@ -1,11 +1,12 @@
-use sea_orm::*;
-
-use rocket::{State, get};
-
 pub mod setup;
+use std::time::Duration;
+
 pub use setup::set_up_db;
 use rocket_taskify::api::task::*; // API Endpoints
-
+use tokio;
+use tokio::time::sleep;
+use rocket::{Rocket, Orbit};
+use rocket::fairing::{Fairing, Info, Kind};
 
 /// SeaORM COMMAND INSTRUCTIONS -------------------------------------------
 // sea-orm-cli migrate generate create_tasks_table => Create migration file 
@@ -17,6 +18,40 @@ use rocket_taskify::api::task::*; // API Endpoints
 // sea-orm-cli generate entity -u postgres://postgres:test123@localhost:5432/rocket_taskify -o src/entities => Then create entities of my migration so i can use for working with the data
 
 #[macro_use] extern crate rocket;
+
+#[derive(Clone)]
+struct SimpleFairing;
+
+#[rocket::async_trait]
+impl Fairing for SimpleFairing {
+    fn info(&self) -> Info {
+        Info {
+            name: "Background Task Fairing",
+            kind: Kind::Liftoff,
+        }
+    }
+
+    async fn on_liftoff(&self, _: &Rocket<Orbit>) {
+        info_!("🚀 Rocket has lifted off!");
+
+        tokio::spawn(async move {
+            loop {
+                info_!("🔄 Running background task...");
+
+                // Simulate work (replace with actual DB update)
+                update_task_priorities().await;
+                
+                info_!("✅ Task done! Sleeping for 24 hours...");
+                sleep(Duration::from_secs(10)).await; // 24 hours
+            }
+        });
+    }
+}
+
+async fn update_task_priorities() {
+    info_!("===> Updating priorities in the database...");
+    
+}
 
 
 #[launch]
@@ -37,4 +72,5 @@ async fn rocket() -> _ {
         update_task,
         complete_task,
         ])
+        .attach(SimpleFairing)
 }

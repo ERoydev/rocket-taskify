@@ -251,3 +251,16 @@ Give me guide how to implement Async priority recalculation on the backend on ru
 
 
 How to calculate if my priority calculation is expensive. How to see that
+
+
+I am using Rocket framework with SeaORM in Rust. I want to build a background task to update priority of my tasks. Show me how to use rocket fairings to create this.
+
+
+Is on_liftoff Fairing function good? Because i need long-term background task which will have timer and every 24hours its going to update my priority field from every record from the DB on table tasks
+
+
+So i use tokio with combination with on_liftoff ?
+
+
+What logger is used in rust to print in console on production ?
+
