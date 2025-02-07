@@ -10,7 +10,7 @@ pub enum TaskPriorityLevel {
     Medium,
     High,
     Immediate,
-    Expired
+    Expired,
 }
 
 impl TaskPriorityLevel {

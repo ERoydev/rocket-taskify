@@ -241,3 +241,7 @@ Okay can i do something to simplify my RAW SQL inside my API POINT because i don
 I have implemented my SQL i have one other problem since my API is
 #[get("/tasks?<sort>")]
 If i dont get sort thats good i have my solution. But if i take sort how to implement the logic without introducing another sql ?
+
+
+#[get("/tasks?filter=isCompleted&value=false")]
+How to do API liket hat in rust rocket 

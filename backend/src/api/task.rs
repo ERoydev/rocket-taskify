@@ -1,3 +1,5 @@
+use std::iter::FilterMap;
+
 use rocket::{serde::json::Json, State};
 use rocket::{delete, get, post};
 use sea_orm::*;
@@ -14,7 +16,9 @@ use crate::ErrorResponder;
 use crate::resources::base_sql::get_base_sql;
 
 
-#[get("/tasks?<sort>")] // Todo retrive by due_date and priority
+// GET ALL TASKS SORTED BY (PRIORITY, DUE_DATE) OR GET TASK BY PRIORITY LEVEL
+// GET /tasks?sort=high or GET /tasks
+#[get("/tasks?<sort>", rank=2)] // Todo retrive by due_date and priority
 pub async fn get_tasks(sort: Option<String>, db: &State<DatabaseConnection>) -> Result<Json<Vec<TaskDTO>>, ErrorResponder> {
     let db = db as &DatabaseConnection;
 
@@ -43,6 +47,53 @@ pub async fn get_tasks(sort: Option<String>, db: &State<DatabaseConnection>) -> 
     Ok(Json(task_dtos))
 }
 
+
+// GET /tasks?filter=isCompleted&value=true Get task by completion property
+#[get("/tasks?<filter>&<value>")]
+pub async fn get_completed_tasks(filter: String, value: String, db: &State<DatabaseConnection>) -> Result<Json<Vec<TaskDTO>>, ErrorResponder> {
+    let db = db as &DatabaseConnection;
+    
+    let value_bool = match value.to_lowercase().as_str() {
+        "true" => true,
+        "false" => false,
+        "" => return Err(ErrorResponder::from("Value parameter cannot be empty")),      
+        _ => return Err(ErrorResponder::from("Value must be true or false")),
+    };
+
+    let tasks = TaskEntity::find()
+        .filter(task::Column::IsCompleted.eq(value_bool))
+        .all(db)
+        .await
+        .map_err(Into::<ErrorResponder>::into)?;
+
+    let task_dto: Vec<TaskDTO> = tasks.into_iter().map(|task| TaskDTO::initialize(ModelTypes::TaskModel(task), None)).collect();
+    Ok(Json(task_dto))
+}
+
+
+
+// GET TASK BY ID
+#[get("/tasks/<id>")]
+pub async fn get_task_by_id(id: i32, db: &State<DatabaseConnection>) -> Result<Json<TaskDTO>, ErrorResponder> {
+    let db = db  as &DatabaseConnection;
+
+    let task = TaskEntity::find_by_id(id)
+        .one(db)
+        .await?;
+
+    match task {
+        Some(task) => {
+            let task_dto: TaskDTO = TaskDTO::initialize(ModelTypes::TaskModel(task), None);
+
+            return Ok(Json(task_dto))
+        }
+        None => {
+            return Err(ErrorResponder::from("There is no task with this id"))
+        }
+    }
+}
+
+
 #[post("/tasks", format="json", data="<new_task>")]
 pub async fn create_task(db: &State<DatabaseConnection>, new_task: Json<NewTask>) -> Result<Json<TaskDTO>, ErrorResponder> {
     let db = db as &DatabaseConnection;
@@ -68,30 +119,11 @@ pub async fn create_task(db: &State<DatabaseConnection>, new_task: Json<NewTask>
     Ok(Json(task_dto))
 }
 
-#[get("/tasks/<id>")]
-pub async fn get_task_by_id(id: i32, db: &State<DatabaseConnection>) -> Result<Json<TaskDTO>, ErrorResponder> {
-    let db = db  as &DatabaseConnection;
-
-    let task = TaskEntity::find_by_id(id)
-        .one(db)
-        .await?;
-
-    match task {
-        Some(task) => {
-            let task_dto: TaskDTO = TaskDTO::initialize(ModelTypes::TaskModel(task), None);
-
-            return Ok(Json(task_dto))
-        }
-        None => {
-            return Err(ErrorResponder::from("There is no task with this id"))
-        }
-    }
-}
 
 #[delete("/tasks/<id>")]
 pub async fn delete_task(id: i32, db: &State<DatabaseConnection>) -> Result<String, ErrorResponder> {
-    let db = db as &DatabaseConnection;
 
+    let db = db as &DatabaseConnection;
 
     let task = TaskEntity::find_by_id(id)
         .one(db)
