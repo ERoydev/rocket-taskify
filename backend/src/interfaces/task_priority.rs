@@ -8,7 +8,7 @@ use chrono::Local;
 
 */
 
-pub fn get_priority_level(is_completed: bool, is_critical: bool, due_date: i32) -> String {
+pub fn get_priority_level(is_completed: bool, is_critical: bool, due_date: i64) -> String {
     let priority_instance: TaskPriority = TaskPriority::new(is_completed, is_critical, due_date);
     let priority: String = TaskPriority::get_priority_level(priority_instance);
     priority
@@ -19,7 +19,7 @@ pub fn get_priority_level(is_completed: bool, is_critical: bool, due_date: i32) 
 struct TaskPriority {
     is_completed: bool,
     is_critical: bool,
-    due_date: i32
+    due_date: i64
 }
 
 
@@ -33,7 +33,7 @@ enum TaskPriorityLevel {
 }
 
 impl TaskPriority {
-    fn new(is_completed: bool, is_critical: bool, due_date: i32) -> TaskPriority  {
+    fn new(is_completed: bool, is_critical: bool, due_date: i64) -> TaskPriority  {
         let instance = TaskPriority {
             is_completed,
             is_critical,
@@ -70,10 +70,8 @@ impl TaskPriority {
         }
     }
 
-    pub fn calculate_priority_based_on_due_date(due_date: i32, now_timestamp: i64) -> TaskPriorityLevel {
-        let due_date_timestamp: i64 = due_date as i64;
-    
-        let difference: i64 = due_date_timestamp - now_timestamp;
+    pub fn calculate_priority_based_on_due_date(due_date: i64, now_timestamp: i64) -> TaskPriorityLevel {
+        let difference: i64 = due_date - now_timestamp;
     
         const ONE_DAY_IN_SECONDS: i64 = 86400;
     

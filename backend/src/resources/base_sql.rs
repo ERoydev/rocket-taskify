@@ -8,6 +8,7 @@ pub fn get_base_sql() -> String {
             priority,
             due_date,
             is_completed,
+            is_critical,
             CASE
                 WHEN priority ILIKE 'expired' Then 1
                 WHEN priority ILIKE 'low' Then 2

@@ -264,3 +264,5 @@ So i use tokio with combination with on_liftoff ?
 
 What logger is used in rust to print in console on production ?
 
+
+In seaORM can i change my entity field for example from i32 to i64. Will this work or i should create new migration write it and create new entity ?

@@ -10,7 +10,7 @@ pub struct Model {
     pub title: String,
     pub description: String,
     pub priority: String,
-    pub due_date: i64, // i use UNIX-Timestamp
+    pub due_date: i64,
     pub is_completed: bool,
     pub is_critical: bool,
 }

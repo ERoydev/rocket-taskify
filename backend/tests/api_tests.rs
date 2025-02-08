@@ -31,6 +31,7 @@ mod tests {
                 priority: "high".to_string(),
                 due_date: 1738706299, // 04-02-25 when converted to TaskDTO
                 is_completed: false,
+                is_critical: false,
             },
             task::Model {
                 id: 2,
@@ -39,6 +40,7 @@ mod tests {
                 priority: "medium".to_string(),
                 due_date: 1838706299, // 07-04-28
                 is_completed: false,
+                is_critical: false,
             },
             task::Model {
                 id: 3,
@@ -47,6 +49,7 @@ mod tests {
                 priority: "low".to_string(),
                 due_date: 1838706299, // 07-04-28
                 is_completed: false,
+                is_critical: false,
             },
             task::Model {
                 id: 4,
@@ -55,6 +58,7 @@ mod tests {
                 priority: "low".to_string(),
                 due_date: 1838706299, // 07-04-28
                 is_completed: true,
+                is_critical: false,
             },
         ];
 

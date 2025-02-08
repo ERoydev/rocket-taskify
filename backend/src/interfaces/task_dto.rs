@@ -41,7 +41,7 @@ impl TaskDTO {
                     priority: model.priority,
                     due_date: converted_due_date,
                     is_completed: model.is_completed,
-                    is_critical: false,
+                    is_critical: model.is_critical,
                     due_date_timestamp: model.due_date.into(),
                 }
             }
@@ -64,7 +64,7 @@ impl TaskDTO {
         }
     }
 
-    fn convert_unix_timestamp(timestamp: Option<i32>) -> String {
+    fn convert_unix_timestamp(timestamp: Option<i64>) -> String {
         match timestamp {
             Some(ts) => {
                 let datetime = DateTime::from_timestamp(ts as i64, 0)

@@ -20,8 +20,9 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Task::Title).string().not_null())
                     .col(ColumnDef::new(Task::Description).string().not_null())
                     .col(ColumnDef::new(Task::Priority).string().not_null())
-                    .col(ColumnDef::new(Task::DueDate).integer().not_null())
+                    .col(ColumnDef::new(Task::DueDate).big_integer().not_null())
                     .col(ColumnDef::new(Task::IsCompleted).boolean().not_null().default(false))
+                    .col(ColumnDef::new(Task::IsCritical).boolean().not_null().default(false))
                     .to_owned(),
             )
             .await
@@ -42,5 +43,6 @@ enum Task {
     Description,
     Priority,
     DueDate,
-    IsCompleted
+    IsCompleted,
+    IsCritical
 }

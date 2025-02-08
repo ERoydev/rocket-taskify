@@ -1,6 +1,7 @@
-use rocket::futures::{FutureExt, TryFutureExt};
+use rocket::futures::TryFutureExt;
 use rocket::{serde::json::Json, State};
 use rocket::{delete, get, post, put};
+use sea_orm::prelude::Expr;
 use sea_orm::*;
 
 
@@ -32,23 +33,24 @@ pub async fn get_tasks(sort: Option<String>, db: &State<DatabaseConnection>) -> 
 
     let tasks = TaskEntity::find()
     // This Returns All tasks sorted by priority DESC then by due_date ASC
-    .from_raw_sql(Statement::from_sql_and_values(
-        DatabaseBackend::Postgres,
-        sql_query,
-        [],
-    ))
-    .all(db)
-    .await
-    .map_err(Into::<ErrorResponder>::into)?;
+        .from_raw_sql(Statement::from_sql_and_values(
+            DatabaseBackend::Postgres,
+            sql_query,
+            [],
+        ))
+        .all(db)
+        .await
+        .map_err(Into::<ErrorResponder>::into)?;
+
 
     /* Note: This is inefficient because i iterate through all tasks to initialize them in Task Struct and could be very slow if records where 1 million for example. 
         + But since its Task application this isn't big problem, because every user will request his own tasks which is aren't going to be even above 100.
         + Otherwise i could fix my problem using DB Stored Procedure to do all priority calculations and unix-timestamp conversion.
     */ 
     // I iterate through Model and convert the it to TaskDTO where i change due_date to string and add new field (Have in mind when you try to deserialize the Model)
-    let task_dtos: Vec<TaskDTO> = tasks.into_iter().map(|task| TaskDTO::initialize(ModelTypes::TaskModel(task), None)).collect();
+    let task_dto_vector: Vec<TaskDTO> = tasks.into_iter().map(|task| TaskDTO::initialize(ModelTypes::TaskModel(task), None)).collect();
 
-    Ok(Json(task_dtos))
+    Ok(Json(task_dto_vector))
 }
 
 
@@ -127,13 +129,13 @@ pub async fn create_task(db: &State<DatabaseConnection>, new_task: Json<NewTask>
 pub async fn update_task(db: &State<DatabaseConnection>, updated_task: Json<TaskDTO>) -> Result<Json<TaskDTO>, ErrorResponder> {
     let db = db as &DatabaseConnection;
 
-    let priority = get_priority_level(updated_task.is_completed, updated_task.is_critical, updated_task.due_date_timestamp as i32);
+    let priority = get_priority_level(updated_task.is_completed, updated_task.is_critical, updated_task.due_date_timestamp);
 
     let updated_task_model = task::ActiveModel {
         title: ActiveValue::Set(updated_task.title.clone()),
         description: ActiveValue::Set(updated_task.description.clone()),
         priority: ActiveValue::Set(priority), // Todo logic
-        due_date: ActiveValue::Set(updated_task.due_date_timestamp as i32),
+        due_date: ActiveValue::Set(updated_task.due_date_timestamp ),
         is_completed: ActiveValue::Set(updated_task.is_completed),
         id: ActiveValue::Set(updated_task.id),
         ..Default::default()
@@ -201,12 +203,38 @@ pub async fn complete_task(id: i32, db: &State<DatabaseConnection>) -> Result<Js
     Ok(Json(task_dto))
 }
 
-// #[post("/tasks/update_priority")]
-// pub async fn update_all_tasks_priority(db: &State<DatabaseConnection>) -> Result<(), ErrorResponder> {
-//     let db = db as &DatabaseConnection;
+#[post("/tasks/critical/<id>")]
+pub async fn critical_task(id: i32, db: &State<DatabaseConnection>) -> Result<Json<TaskDTO>, ErrorResponder> {
+    let db = db as &DatabaseConnection;
 
+    let task = TaskEntity::find_by_id(id)
+        .one(db)
+        .await
+        .map_err(Into::<ErrorResponder>::into)?
+        .ok_or_else(|| ErrorResponder::from("You cannot set critical to task that doesn't exists, try using another task id!"))?;
 
+    let mut task_active_model: task::ActiveModel = task.into();
+    task_active_model.is_critical = Set(true);
 
+    let priority = get_priority_level(task_active_model.is_completed.clone().unwrap(), false, task_active_model.due_date.clone().unwrap());
 
-//     Ok(())
-// }
+    task_active_model.priority = Set(priority);
+
+    let task: task::Model = task_active_model.update(db).await?;
+
+    let task_dto: TaskDTO = TaskDTO::initialize(ModelTypes::TaskModel(task), None);
+
+    Ok(Json(task_dto))
+}
+
+#[post("/tasks/update_priority")]
+pub async fn update_all_tasks_priority(db: &State<DatabaseConnection>) -> Result<(), ErrorResponder> {
+    let db = db as &DatabaseConnection;
+
+    // TaskEntity::find()
+    //     .filter(task::Column::IsCompleted.ne(true) || task::Column::IsCritical.ne(true))
+    //     .all(db)
+    //     .await?;
+        
+    Ok(())
+}

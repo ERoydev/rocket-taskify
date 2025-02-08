@@ -2,6 +2,7 @@ pub use sea_orm_migration::prelude::*;
 
 mod m20250204_170857_create_tasks_table;
 
+
 pub struct Migrator;
 
 #[async_trait::async_trait]
