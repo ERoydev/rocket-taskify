@@ -266,3 +266,16 @@ What logger is used in rust to print in console on production ?
 
 
 In seaORM can i change my entity field for example from i32 to i64. Will this work or i should create new migration write it and create new entity ?
+
+
+Guide me how to create bulk update on seaORM where i use tuple (i32, String) to update all my tasks.
+
+
+in rocket seaORM
+
+
+async fn update_task_priorities() {
+    info_!("===> Updating priorities in the database...");
+    
+}
+This is ordinary function on other module how can i call API request here ?

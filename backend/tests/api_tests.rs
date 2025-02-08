@@ -3,6 +3,7 @@
 
 #[cfg(test)]
 mod tests {
+    use chrono::Local;
     use rocket::http::Status;
     use rocket::local::asynchronous::Client;
     use rocket::{routes, Build, Rocket};
@@ -18,7 +19,7 @@ mod tests {
     fn rocket(db: DatabaseConnection) -> Rocket<Build> {
         rocket::build()
             .manage(db)
-            .mount("/", routes![get_tasks, create_task, delete_task]) // Put your API's here
+            .mount("/", routes![get_tasks, create_task, delete_task, update_tasks_priority]) // Put your API's here
     }
 
     // Setup func for mock_data
@@ -380,6 +381,45 @@ mod tests {
         assert_eq!("Task successfully deleted.", respone_json);
     }
     
+    #[rocket::async_test]
+    async fn test_update_priority() {
+        let mut mock_tasks = vec![
+            task::Model {
+                id: 1,
+                title: "Walk The Dog".to_string(),
+                description: "walk the dog".to_string(),
+                priority: "high".to_string(),
+                due_date: 1738706299, // 04-02-25 when converted to TaskDTO
+                is_completed: false,
+                is_critical: false,
+            },
+            task::Model {
+                id: 2,
+                title: "Wash The Dishes".to_string(),
+                description: "wash the dishes".to_string(),
+                priority: "medium".to_string(),
+                due_date: 1838706299, // 07-04-28
+                is_completed: false,
+                is_critical: false,
+            },
+        ];
+
+        let now_timestamp: i64 = Local::now().timestamp();
+
+        mock_tasks.iter_mut().for_each(|task| {
+            task.due_date = now_timestamp + 5;
+        });
+
+        let db = mock_db_setup(mock_tasks);
+
+        let rocket = rocket(db);
+    
+        let client = Client::tracked(rocket).await.expect("valid rocket instance");
+
+        let response = client.post("/tasks/update_priority").dispatch().await;
+
+        println!("---------------------TIMESTAMP: {:?}", response);
+    }
 }
 
 

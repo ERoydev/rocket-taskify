@@ -191,6 +191,7 @@ pub async fn complete_task(id: i32, db: &State<DatabaseConnection>) -> Result<Js
 
     let mut task_active_model: task::ActiveModel = task.into();
     task_active_model.is_completed = Set(true);
+    task_active_model.is_critical = Set(false);
 
     let priority = get_priority_level(task_active_model.is_completed.clone().unwrap(), false, task_active_model.due_date.clone().unwrap()); // Because when it is completed i cannot be critical anymore
 
@@ -216,7 +217,7 @@ pub async fn critical_task(id: i32, db: &State<DatabaseConnection>) -> Result<Js
     let mut task_active_model: task::ActiveModel = task.into();
     task_active_model.is_critical = Set(true);
 
-    let priority = get_priority_level(task_active_model.is_completed.clone().unwrap(), false, task_active_model.due_date.clone().unwrap());
+    let priority = get_priority_level(task_active_model.is_completed.clone().unwrap(), task_active_model.is_critical.clone().unwrap(), task_active_model.due_date.clone().unwrap());
 
     task_active_model.priority = Set(priority);
 
@@ -228,13 +229,33 @@ pub async fn critical_task(id: i32, db: &State<DatabaseConnection>) -> Result<Js
 }
 
 #[post("/tasks/update_priority")]
-pub async fn update_all_tasks_priority(db: &State<DatabaseConnection>) -> Result<(), ErrorResponder> {
+pub async fn update_tasks_priority(db: &State<DatabaseConnection>) -> Result<(), ErrorResponder> {
     let db = db as &DatabaseConnection;
 
-    // TaskEntity::find()
-    //     .filter(task::Column::IsCompleted.ne(true) || task::Column::IsCritical.ne(true))
-    //     .all(db)
-    //     .await?;
-        
+    // I fetch tasks that need a priority update
+    let mut tasks: Vec<task::Model> = TaskEntity::find()
+        .filter(
+            // I dont want to update priority on tasks which have already defined static priority based on these two boolean scenarios or no need to calculate expired tasks
+            Condition::all()
+                .add(task::Column::IsCompleted.eq(false)) 
+                .add(task::Column::IsCritical.eq(false))
+                .add(task::Column::Priority.not_like("%expired%"))
+        )
+        .into_model()
+        .all(db)
+        .await?;
+
+      // Prepare a vector to store the updated tasks for the response
+
+    tasks.iter_mut().for_each(|task| {
+        task.priority = get_priority_level(false, false, task.due_date);
+    });
+
+    for task in tasks {
+        let active_model: task::ActiveModel = task.into();
+
+        active_model.update(db).await?;
+    }
+    
     Ok(())
 }

@@ -1,6 +1,7 @@
 pub mod setup;
 use std::time::Duration;
-
+use reqwest::Client as ReqClient;
+use rocket::local::asynchronous::Client;
 pub use setup::set_up_db;
 use rocket_taskify::api::task::*; // API Endpoints
 use tokio;
@@ -42,7 +43,7 @@ impl Fairing for SimpleFairing {
                 update_task_priorities().await;
                 
                 info_!("✅ Task done! Sleeping for 24 hours...");
-                sleep(Duration::from_secs(10)).await; // 24 hours
+                sleep(Duration::from_secs(24 * 3600)).await; // 24 hours
             }
         });
     }
@@ -51,6 +52,26 @@ impl Fairing for SimpleFairing {
 async fn update_task_priorities() {
     info_!("===> Updating priorities in the database...");
     
+    let client = ReqClient::new();
+
+    let api_url = "http://localhost:8000/tasks/update_priority"; // ================================================= API_URL FOR UPDATING PRIORITIES =================
+
+    let response = client.post(api_url)
+        .send()
+        .await;
+
+        match response {
+            Ok(res) => {
+                if res.status().is_success() {
+                    info_!("Successfully updated tasks:");
+                } else {
+                    error_!("Failed to update tasks, status: {}", res.status());
+                }
+            }
+            Err(err) => {
+                error_!("Error making request: {}", err);
+            }
+        }
 }
 
 
@@ -71,7 +92,8 @@ async fn rocket() -> _ {
         get_tasks_by_completion_status, 
         update_task,
         complete_task,
-        critical_task
+        critical_task,
+        update_tasks_priority,
         ])
         .attach(SimpleFairing)
 }

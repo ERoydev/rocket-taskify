@@ -16,6 +16,7 @@ lazy_static = "1.4.0"
 thiserror = "2.0.11"
 async-trait = "0.1.86"
 tokio-cron-scheduler = "0.13.0"
+reqwest = "0.12.12"
 
 [global]
 log = "debug"
