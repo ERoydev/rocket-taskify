@@ -279,3 +279,9 @@ async fn update_task_priorities() {
     
 }
 This is ordinary function on other module how can i call API request here ?
+
+
+Can i implement priority update on 24 hours with Stored procedure on postgres without relying on backend ?
+
+
+Is this approach actually better ?

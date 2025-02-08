@@ -1,14 +1,14 @@
 pub mod setup;
+
 use std::time::Duration;
 use reqwest::Client as ReqClient;
-use rocket::local::asynchronous::Client;
 pub use setup::set_up_db;
 use rocket_taskify::api::task::*; // API Endpoints
 use tokio;
 use tokio::time::sleep;
 use rocket::{Rocket, Orbit};
 use rocket::fairing::{Fairing, Info, Kind};
-
+use rocket::{Request, Response};
 /// SeaORM COMMAND INSTRUCTIONS -------------------------------------------
 // sea-orm-cli migrate generate create_tasks_table => Create migration file 
 
@@ -39,13 +39,32 @@ impl Fairing for SimpleFairing {
             loop {
                 info_!("🔄 Running background task...");
 
-                // Simulate work (replace with actual DB update)
                 update_task_priorities().await;
                 
                 info_!("✅ Task done! Sleeping for 24 hours...");
                 sleep(Duration::from_secs(24 * 3600)).await; // 24 hours
             }
         });
+    }
+}
+
+
+#[derive(Default)]
+struct Cors;
+
+#[rocket::async_trait]
+impl Fairing for Cors {
+    fn info(&self) -> Info {
+        Info {
+            name: "CORS Middleware",
+            kind: Kind::Response,
+        }
+    }
+
+    async fn on_response<'r>(&self, request: &'r Request<'_>, response: &mut Response<'r>) {
+        response.set_raw_header("Access-Control-Allow-Origin", "*");
+        response.set_raw_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+        response.set_raw_header("Access-Control-Allow-Headers", "Content-Type");
     }
 }
 
@@ -82,18 +101,22 @@ async fn rocket() -> _ {
         Err(err) => panic!("{}", err),
     };
 
+
+
     rocket::build()
         .manage(db)
-        .mount("/", routes![
-        get_tasks, 
-        create_task, 
-        delete_task, 
-        get_task_by_id, 
-        get_tasks_by_completion_status, 
-        update_task,
-        complete_task,
-        critical_task,
-        update_tasks_priority,
-        ])
+        .mount("/",          
+            routes![
+                get_tasks, 
+                create_task, 
+                delete_task, 
+                get_task_by_id, 
+                get_tasks_by_completion_status, 
+                update_task,
+                complete_task,
+                critical_task,
+                update_tasks_priority,
+            ])
         .attach(SimpleFairing)
+        .attach(Cors)
 }
