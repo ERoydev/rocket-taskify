@@ -2,6 +2,7 @@ pub mod setup;
 
 use std::time::Duration;
 use reqwest::Client as ReqClient;
+use rocket::http::{Method, Status};
 pub use setup::set_up_db;
 use rocket_taskify::api::task::*; // API Endpoints
 use tokio;
@@ -63,8 +64,13 @@ impl Fairing for Cors {
 
     async fn on_response<'r>(&self, request: &'r Request<'_>, response: &mut Response<'r>) {
         response.set_raw_header("Access-Control-Allow-Origin", "*");
-        response.set_raw_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+        response.set_raw_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
         response.set_raw_header("Access-Control-Allow-Headers", "Content-Type");
+
+        // ✅ WHen i try to DELETE ruquest from frontend it is sended as OPTIONS instead of DELETE
+        if request.method() == Method::Options {
+            response.set_status(Status::NoContent);
+        }
     }
 }
 

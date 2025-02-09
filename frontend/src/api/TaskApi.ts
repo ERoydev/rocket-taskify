@@ -38,7 +38,7 @@ const getTasksByCompletionStatus = async (isCompleted: boolean) => {
 };
 
 // Get task by ID
-const getTaskById = async (id: number) => {
+export const getTaskById = async (id: number) => {
   try {
     const response = await api.get(`/tasks/${id}`);
     return response.data;
@@ -71,7 +71,7 @@ const updateTask = async (updatedTask: any) => {
 };
 
 // Delete a task by ID
-const deleteTask = async (id: number) => {
+export const deleteTask = async (id: number) => {
   try {
     const response = await api.delete(`/tasks/${id}`);
     return response.data;
