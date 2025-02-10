@@ -20,7 +20,8 @@ This API manages tasks with basic CRUD operations.
   - [Task Priority Levels](#task-priority-levels)
 - [Frontend Implementation](#frontend-implementation)
 
-
+$~~~~~~~~~~~$
+$~~~~~~~~~~~$
 # Tech Stack
 
 ## 🚀 Rust
