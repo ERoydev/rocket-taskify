@@ -19,6 +19,7 @@ This API manages tasks with basic CRUD operations.
   - [GET /tasks?filter=isCompleted&value=true](#get-tasksfilteriscompletedvaluetrue)
   - [Task Priority Levels](#task-priority-levels)
 - [Frontend Implementation](#frontend-implementation)
+- [Future Improvements](#future-improvements)
 
 $~~~~~~~~~~~$
 $~~~~~~~~~~~$
@@ -320,5 +321,5 @@ $~~~~~~~~~~~$
 # Future Improvements
 I want to implement frontend to consume the backend with authentication:
 - i will try using solana smart contracts using anchor for education purposes.
-- i will upload simple version with front and backend version to use it as a showcase project setting CD/CI to deploy it to render.
+- i will upload simple version with front and backend version to use it as a showcase project. I will implement CD/CI git action to build, test, deploy to render.
 
