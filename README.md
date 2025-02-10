@@ -96,7 +96,7 @@ createdb -U postgres rocket_taskify
 Navigate to the backend directory of the project:
 
 ```sh
-cd ./backend
+cd ./backend/src
 ```
 
 Edit `setup.rs` to include the correct database URL:
@@ -108,10 +108,22 @@ const DATABASE_URL: &str = "postgresql://<username>:<password>@localhost:5432/ro
 Replace `<username>` and `<password>` with your actual PostgreSQL credentials.
 
 ### 5. Apply Migrations
-Run the following command to apply database migrations using `sea-orm-cli`:
+
+To apply the database migrations, follow these steps:
+
+1. **Navigate to the backend folder**:
+   ```bash
+   cd ./backend
+
+2. Run the migration command: Replace <username> and <password> with your PostgreSQL credentials:
 
 ```sh
 sea-orm-cli migrate up -u postgresql://<username>:<password>@localhost:5432/rocket_taskify
+```
+Example:
+```sh
+sea-orm-cli migrate up -u postgresql://admin:mysecurepassword@localhost:5432/rocket_taskify
+
 ```
 
 ### 6. Run the Project
