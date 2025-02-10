@@ -317,3 +317,8 @@ $~~~~~~~~~~~$
 ![Screenshot 2025-02-09 023127](https://github.com/user-attachments/assets/a9236cfa-bfc9-43e5-931d-8193cca25b61)
 
 
+# Future Improvements
+I want to implement frontend to consume the backend with authentication:
+- i will try using solana smart contracts using anchor for education purposes.
+- i will upload simple version with front and backend version to use it as a showcase project setting CD/CI to deploy it to render.
+
