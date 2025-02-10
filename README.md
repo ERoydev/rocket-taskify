@@ -2,6 +2,25 @@
 
 This API manages tasks with basic CRUD operations.
 
+## Table of Contents
+- [Tech Stack](#tech-stack)
+- [Rocket Taskify Installation Guide](#rocket-taskify-installation-guide)
+  - [Install Rust](#1-install-rust)
+  - [Install PostgreSQL](#2-install-postgresql)
+  - [Create the Database](#3-create-the-database)
+  - [Configure Database Connection](#4-configure-database-connection)
+  - [Apply Migrations](#5-apply-migrations)
+  - [Run the Project](#6-run-the-project)
+- [Endpoints](#endpoints)
+  - [GET /tasks](#get-tasks)
+  - [POST /tasks](#post-tasks)
+  - [DELETE /tasks/id](#delete-tasksid)
+  - [PUT /tasks](#put-tasks)
+  - [GET /tasks?filter=isCompleted&value=true](#get-tasksfilteriscompletedvaluetrue)
+  - [Task Priority Levels](#task-priority-levels)
+- [Frontend Implementation](#frontend-implementation)
+
+
 # Tech Stack
 
 ## 🚀 Rust
@@ -17,6 +36,91 @@ This API manages tasks with basic CRUD operations.
 - Asynchronous ORM for Rust, built for SQL databases.
 - Supports PostgreSQL, MySQL, and SQLite.
 - Provides type-safe, efficient database interactions with migrations.
+
+$~~~~~~~~~~~$
+$~~~~~~~~~~~$
+# Rocket Taskify Installation Guide
+
+This guide will help you set up and run the Rocket Taskify project using the Rocket framework.
+
+## Prerequisites
+Before setting up the project, ensure you have the following installed:
+
+### 1. Install Rust
+Rust is required to run this project. Install Rust using `rustup`:
+
+```sh
+Make sure you are using rustc 1.84.1 version
+```
+
+After installation, restart your terminal and verify the installation:
+
+```sh
+rustc --version
+```
+
+### 2. Install PostgreSQL
+This project requires PostgreSQL as the database. Install it based on your operating system:
+
+- **Ubuntu/Debian:**
+  ```sh
+  sudo apt update
+  sudo apt install postgresql postgresql-contrib
+  ```
+- **MacOS (Homebrew):**
+  ```sh
+  brew install postgresql
+  ```
+- **Windows (Chocolatey):**
+  ```sh
+  choco install postgresql
+  ```
+
+### 3. Create the Database
+Start the PostgreSQL service and create a database named `rocket_taskify`:
+
+```sh
+psql -U postgres
+CREATE DATABASE rocket_taskify;
+\q
+```
+
+Alternatively, use a single command:
+
+```sh
+createdb -U postgres rocket_taskify
+```
+
+### 4. Configure Database Connection
+Navigate to the backend directory of the project:
+
+```sh
+cd ./backend
+```
+
+Edit `setup.rs` to include the correct database URL:
+
+```rust
+const DATABASE_URL: &str = "postgresql://<username>:<password>@localhost:5432/rocket_taskify";
+```
+
+Replace `<username>` and `<password>` with your actual PostgreSQL credentials.
+
+### 5. Apply Migrations
+Run the following command to apply database migrations using `sea-orm-cli`:
+
+```sh
+sea-orm-cli migrate up -u postgresql://<username>:<password>@localhost:5432/rocket_taskify
+```
+
+### 6. Run the Project
+Finally, start the Rocket server by running:
+
+```sh
+cargo run
+```
+
+Your Rocket project should now be up and running!
 
 $~~~~~~~~~~~$
 $~~~~~~~~~~~$
@@ -48,6 +152,16 @@ Create a new task.
     "is_critical": false
 }
 ```
+- *To create a task my application use this data object*
+```ru
+pub struct NewTask {
+    pub title: String,
+    pub description: String,
+    pub due_date: i64, // i use UNIX-Timestamp
+    pub is_completed: bool,
+    pub is_critical: bool,
+}
+```
 
 $~~~~~~~~~~~$
 ### DELETE /tasks/id
@@ -69,6 +183,19 @@ Update a task with new fields
     "is_completed": false,
     "is_critical": false,
     "due_date_timestamp": 1738971697
+}
+```
+- *To update a task the application is using this data object
+```ru
+pub struct TaskDTO {
+    pub id: i32,
+    pub title: String,
+    pub description: String,
+    pub priority: String,
+    pub due_date: String, // i use UNIX-Timestamp
+    pub is_completed: bool,
+    pub is_critical: bool, // If user update
+    pub due_date_timestamp: i64,
 }
 ```
 
