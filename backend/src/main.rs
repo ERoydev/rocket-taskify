@@ -107,8 +107,6 @@ async fn rocket() -> _ {
         Err(err) => panic!("{}", err),
     };
 
-
-
     rocket::build()
         .manage(db)
         .mount("/",          
