@@ -1,7 +1,7 @@
-use rocket::futures::TryFutureExt;
+
 use rocket::{serde::json::Json, State};
 use rocket::{delete, get, post, put};
-use sea_orm::prelude::Expr;
+
 use sea_orm::*;
 
 
@@ -57,6 +57,8 @@ pub async fn get_tasks(sort: Option<String>, db: &State<DatabaseConnection>) -> 
 // GET /tasks?filter=isCompleted&value=true Get task by completion property
 #[get("/tasks?<filter>&<value>")]
 pub async fn get_tasks_by_completion_status(filter: String, value: String, db: &State<DatabaseConnection>) -> Result<Json<Vec<TaskDTO>>, ErrorResponder> {
+    let _ = filter;
+    
     let db = db as &DatabaseConnection;
     
     let value_bool = match value.to_lowercase().as_str() {

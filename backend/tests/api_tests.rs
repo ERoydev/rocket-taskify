@@ -19,7 +19,7 @@ mod tests {
     fn rocket(db: DatabaseConnection) -> Rocket<Build> {
         rocket::build()
             .manage(db)
-            .mount("/", routes![get_tasks, create_task, delete_task, update_tasks_priority]) // Put your API's here
+            .mount("/", routes![get_tasks, create_task, update_tasks_priority, update_task, delete_task, get_task_by_id]) // Put your API's here
     }
 
     // Setup func for mock_data
@@ -359,7 +359,6 @@ mod tests {
         let response = client.delete("/tasks/1").dispatch().await;
   
         assert_eq!(response.status(), rocket::http::Status::Ok);
-        
     }
 
 
@@ -420,6 +419,69 @@ mod tests {
 
         println!("---------------------TIMESTAMP: {:?}", response);
     }
+
+    #[rocket::async_test]
+    async fn test_update_task() {
+        let mock_tasks = mock_tasks_setup();
+
+        let db: DatabaseConnection = mock_db_setup(mock_tasks);
+        
+        let rocket = rocket(db);
+
+        let updated_task = TaskDTO {
+            id: 1,
+            title: "Walk The Cat".to_string(),
+            description: "walk the dog".to_string(),
+            priority: "high".to_string(), 
+            due_date: "04-02-2025".to_string(),
+            is_completed: false,
+            is_critical: false,
+            due_date_timestamp: 1738706299,
+        };
+
+        let client = Client::tracked(rocket).await.expect("valid rocket instance");
+        
+        let post_response = client.put("/tasks").json(&updated_task).dispatch().await;
+
+        assert_eq!(post_response.status(), Status::Ok, "Expected the response to be with status 200, but its not");
+    }
+
+    #[rocket::async_test]
+    async fn test_get_task_by_id_should_be_valid() {
+        let mock_tasks = mock_tasks_setup();
+        let db: DatabaseConnection = mock_db_setup(mock_tasks);
+        let rocket = rocket(db);
+
+        let client = Client::tracked(rocket).await.expect("valid rocket instance");
+        
+        let response = client.get("/tasks/1").dispatch().await;
+
+        assert_eq!(response.status(), Status::Ok, "Expected the response to be with status 200, but its not");
+    }
+
+    #[rocket::async_test]
+    async fn test_get_task_by_id_should_return_correct_task_with_fields() {
+        let mock_tasks = mock_tasks_setup();
+        let db: DatabaseConnection = mock_db_setup(mock_tasks);
+        let rocket = rocket(db);
+
+        let client = Client::tracked(rocket).await.expect("valid rocket instance");
+        
+        let response = client.get("/tasks/1").dispatch().await;
+
+        assert_eq!(response.status(), Status::Ok, "Expected the response to be with status 200, but its not");
+
+        let task: TaskDTO = response.into_json().await.expect("Expected correct json");
+
+        assert_eq!("Walk The Dog".to_string(), task.title);
+        assert_eq!("walk the dog".to_string(), task.description);
+        assert_eq!("high".to_string(), task.priority);
+        assert_eq!("04-02-25".to_string(), task.due_date);
+        assert_eq!(false, task.is_completed);
+        assert_eq!(false, task.is_critical);
+
+    }
+
 }
 
 
