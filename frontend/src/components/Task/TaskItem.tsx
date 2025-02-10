@@ -1,7 +1,15 @@
-import { useState } from "react";
-import Modal from "./Modal";
+import Task from "../../interfaces/Task";
 
-export default function TaskItem({task, modalHandler}) {
+
+
+
+export default function TaskItem({
+  task,
+  modalHandler
+}: {
+  task: Task
+  modalHandler: (id: number) => void;
+}) {
 
     const getPriorityColor = (priority: string) => {
         switch (priority) {

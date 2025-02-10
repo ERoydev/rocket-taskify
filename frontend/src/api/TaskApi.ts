@@ -25,7 +25,7 @@ export const getTasks = async (sort?: string) => {
 };
 
 // Get tasks by completion status (true/false)
-const getTasksByCompletionStatus = async (isCompleted: boolean) => {
+export const getTasksByCompletionStatus = async (isCompleted: boolean) => {
   try {
     const response = await api.get(`/tasks`, {
       params: { filter: "isCompleted", value: isCompleted.toString() },
@@ -49,7 +49,7 @@ export const getTaskById = async (id: number) => {
 };
 
 // Create a new task
-const createTask = async (newTask: any) => {
+export const createTask = async (newTask: any) => {
   try {
     const response = await api.post(`/tasks`, newTask);
     return response.data;
@@ -60,7 +60,7 @@ const createTask = async (newTask: any) => {
 };
 
 // Update an existing task
-const updateTask = async (updatedTask: any) => {
+export const updateTask = async (updatedTask: any) => {
   try {
     const response = await api.put(`/tasks`, updatedTask);
     return response.data;
@@ -82,7 +82,7 @@ export const deleteTask = async (id: number) => {
 };
 
 // Mark task as complete
-const completeTask = async (id: number) => {
+export const completeTask = async (id: number) => {
   try {
     const response = await api.post(`/tasks/complete/${id}`);
     return response.data;
@@ -93,7 +93,7 @@ const completeTask = async (id: number) => {
 };
 
 // Mark task as critical
-const criticalTask = async (id: number) => {
+export const criticalTask = async (id: number) => {
   try {
     const response = await api.post(`/tasks/critical/${id}`);
     return response.data;
@@ -104,7 +104,7 @@ const criticalTask = async (id: number) => {
 };
 
 // Update task priorities
-const updateTasksPriority = async () => {
+export const updateTasksPriority = async () => {
   try {
     await api.post(`/tasks/update_priority`);
   } catch (error) {

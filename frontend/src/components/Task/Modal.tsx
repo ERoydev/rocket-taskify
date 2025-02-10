@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getTaskById } from "../../api/TaskApi";
 
 interface Task {
@@ -17,6 +17,11 @@ export default function Modal({
     closeModal, 
     taskId,
     deleteTask
+ }: {
+    isOpen: boolean;
+    closeModal: (id: number) => void;
+    taskId: number;
+    deleteTask: (id: number) => void;
  }) {
   // Ref to detect clicks outside of modal content
     const modalRef = useRef<HTMLDivElement | null>(null);
@@ -39,7 +44,7 @@ export default function Modal({
                 backdropRef.current &&
                 !backdropRef.current.contains(event.target as Node)
             ) {
-                closeModal(0);
+                closeModal(taskId);
             }
         };
         
@@ -51,10 +56,13 @@ export default function Modal({
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, [isOpen, taskId, closeModal]);
-    
+
+
+    const closeModalHandler = () => {
+        closeModal(task.id);
+    }
     const deleteTaskHandler = () => {
         deleteTask(taskId);
-        closeModal();
     }
     
     return (
@@ -64,7 +72,7 @@ export default function Modal({
                 ref={backdropRef} 
                 className="fixed inset-0 bg-gray-500/75 transition-opacity" 
                 aria-hidden="true"
-                onClick={closeModal}
+                onClick={closeModalHandler}
             ></div>
 
         <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
@@ -124,7 +132,7 @@ export default function Modal({
                     <button 
                         type="button" 
                         className="hover:cursor-pointer inline-flex w-full justify-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-black sm:ml-3 sm:w-auto"
-                        onClick={closeModal}
+                        onClick={closeModalHandler}
                     >
                         Completed
                     </button>

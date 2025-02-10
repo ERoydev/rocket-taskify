@@ -1,16 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getTaskById } from "../../api/TaskApi";
+import Task from "../../interfaces/Task";
 
-interface Task {
-    id: number,
-    title: string,
-    description: string,
-    priority: string,
-    due_date: string,
-    is_completed: boolean,
-    is_critical:boolean,
-    due_date_timestamp: number
-}
 
 export default function FormModal({ 
     isOpen, 
@@ -18,7 +9,7 @@ export default function FormModal({
     taskId,
  }: {
     isOpen: boolean;
-    closeModel: void;
+    closeModal: () => void;
     taskId?: number;
  }) {
   // Ref to detect clicks outside of modal content
@@ -42,7 +33,7 @@ export default function FormModal({
                 backdropRef.current &&
                 !backdropRef.current.contains(event.target as Node)
             ) {
-                closeModal(0);
+                closeModal();
             }
         };
         
@@ -136,7 +127,7 @@ export default function FormModal({
                             <div className="mt-4">
                                 <button
                                 type="submit"
-                                class="w-full rounded-md bg-slate-800 py-2 px-4 text-white transition-all hover:bg-slate-700 focus:outline-none"
+                                className="w-full rounded-md bg-slate-800 py-2 px-4 text-white transition-all hover:bg-slate-700 focus:outline-none"
                                 >
                                 Submit
                                 </button>

@@ -1,6 +1,9 @@
 export default function SocialItem({
     imgPath,
     linkName
+}: {
+    imgPath: string;
+    linkName: string;
 }) {
 
     const clickHandler = () => {

@@ -8,7 +8,6 @@ import FormModal from "./FormModal";
 
 export default function TaskList() {
     const [tasks, setTasks] = useState<any[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [modalIsOpen, setModalIsOpen] = useState(false);
     const [formModalIsOpen, setFormModalIsOpen] = useState(false);
@@ -22,8 +21,6 @@ export default function TaskList() {
             setTasks(fetchedTasks);  // Set tasks in state
           } catch (err) {
             setError('Failed to fetch tasks');  // Handle error
-          } finally {
-            setLoading(false);  // Set loading state to false once done
           }
         };
     
@@ -31,7 +28,7 @@ export default function TaskList() {
       }, [])
 
 
-    const formModalHanlder = (id: number) => {
+    const formModalHandler = () => {
         if (formModalIsOpen) {
             setFormModalIsOpen(false)
         } else if (!formModalIsOpen) {
@@ -60,10 +57,11 @@ export default function TaskList() {
 
     return(
         <>
+        {error && <p>{error}</p>}
         {formModalIsOpen && 
             <FormModal
                 isOpen={formModalIsOpen}    
-                closeModal={formModalHanlder}
+                closeModal={formModalHandler}
                 />
         }
         
@@ -72,7 +70,7 @@ export default function TaskList() {
                 isOpen={modalIsOpen} 
                 closeModal={modalHandler} 
                 taskId={currTaskId}
-                deleteTask={deleteTask}
+                deleteTask={deleteTaskHandler}
             />
         }
         <div className="antialiased bg-white text-slate-700 p-20 pb-30" id="tasklist">
