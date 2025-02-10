@@ -13,9 +13,6 @@ jobs:
   build-frontend:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x, 22.x]
 
     defaults:
       run:
@@ -25,10 +22,10 @@ jobs:
     - name: Checkout the repository
       uses: actions/checkout@v4
       
-    - name: Use Node.js ${{ matrix.node-version }}
+    - name: Use Node.js version
       uses: actions/setup-node@v4
       with:
-        node-version: ${{ matrix.node-version }}
+        node-version: 22
         cache: 'npm'
 
     - name: Install npm modules
