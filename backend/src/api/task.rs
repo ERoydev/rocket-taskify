@@ -4,7 +4,6 @@ use rocket::{delete, get, post, put};
 
 use sea_orm::*;
 
-
 use crate::entities::{prelude::*, task};
 use crate::entities::task::Entity as TaskEntity;
 
@@ -247,8 +246,7 @@ pub async fn update_tasks_priority(db: &State<DatabaseConnection>) -> Result<(),
         .all(db)
         .await?;
 
-      // Prepare a vector to store the updated tasks for the response
-
+    // Prepare a vector to store the updated tasks for the response
     tasks.iter_mut().for_each(|task| {
         task.priority = get_priority_level(false, false, task.due_date);
     });

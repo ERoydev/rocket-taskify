@@ -1,5 +1,3 @@
-// src/main.rs
-
 use rocket::Responder;
 use sea_orm::DbErr;
 

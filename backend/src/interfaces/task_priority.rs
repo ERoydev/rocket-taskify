@@ -107,7 +107,7 @@ mod tests {
         NewTask {
             title: "title".to_string(),
             description: "description".to_string(),
-            due_date: 1738859415,
+            due_date: 1738859415, // "Current DateTime"
             is_completed: false,
             is_critical: false,
         }
@@ -115,7 +115,7 @@ mod tests {
 
     #[test]
     fn test_priority_low_should_be_valid() {
-        let task_due_date = 1739200000;
+        let task_due_date = 1739200000; // Low
 
         let priority = TaskPriority::calculate_priority_based_on_due_date(task_due_date, INITIAL_TIMESTAMP);
 

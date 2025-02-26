@@ -10,6 +10,7 @@ use tokio::time::sleep;
 use rocket::{Rocket, Orbit};
 use rocket::fairing::{Fairing, Info, Kind};
 use rocket::{Request, Response};
+
 /// SeaORM COMMAND INSTRUCTIONS -------------------------------------------
 // sea-orm-cli migrate generate create_tasks_table => Create migration file 
 
@@ -67,7 +68,7 @@ impl Fairing for Cors {
         response.set_raw_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
         response.set_raw_header("Access-Control-Allow-Headers", "Content-Type");
 
-        // ✅ WHen i try to DELETE ruquest from frontend it is sended as OPTIONS instead of DELETE
+        // ✅ When i try to DELETE ruquest from frontend it is sended as OPTIONS instead of DELETE
         if request.method() == Method::Options {
             response.set_status(Status::NoContent);
         }
