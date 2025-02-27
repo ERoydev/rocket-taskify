@@ -3,10 +3,11 @@ use rocket::{serde::json::Json, State};
 use serde::{Deserialize, Serialize};
 use chrono::Utc;
 
-use jsonwebtoken::{Algorithm, Header, encode, EncodingKey};
-use jsonwebtoken::errors::Error;
+use jsonwebtoken::{encode, Algorithm, DecodingKey, EncodingKey, Header, Validation, decode};
+use jsonwebtoken::errors::{Error, ErrorKind};
 use dotenv::dotenv;
 
+use crate::accounts::user::{User, NewUser};
 use crate::ErrorResponder;
 use std::env;
 
@@ -17,6 +18,7 @@ Used the following documentation as a guidance for creating the JWT authenticati
 
 const TOKEN_EXPIRE_TIME_IN_SECONDS: i64 = 60; // i64 expected from chrono::Duration::seconds
 const USED_HASH_ALGORITHM: Algorithm = Algorithm::HS512;
+
 /*
 HMAC(hash message authentication code) using SHA-512 (512bits)
 It's a symmetric encryption algorithm:
@@ -56,22 +58,30 @@ pub fn create_jwt(id: i32) -> Result<String, Error> {
 
     let header = Header::new(USED_HASH_ALGORITHM);
 
-    encode(&header, &claims, &EncodingKey::from_secret(secret.as_bytes()))
+    encode(&header, &claims, &EncodingKey::from_secret(secret.as_bytes())) // Returns token
 }
 
-fn decode_jwt(token: String) -> Result<Claims, Error> {
+fn decode_jwt(token: String) -> Result<Claims, ErrorKind> {
+    let secret = env::var("JWT_SECRET").expect("JWT_SECRET MUST BE SET");
     let token = token.trim_start_matches("Bearer").trim();
 
-    
-    todo!()
+    match decode::<Claims>(
+        &token,
+        &DecodingKey::from_secret(secret.as_bytes()),
+        &Validation::new(USED_HASH_ALGORITHM),
+    ) {
+        Ok(token) => Ok(token.claims),
+        Err(err) => Err(err.kind().to_owned())
+    }
 }
 
+#[post("/auth/signup", format="json", data="<user_data>")]
+pub async fn signup(user_data: Json<NewUser>) -> Result<(), ErrorResponder> {
+    User::new(user_data.id, user_data.name, user_data.password);
 
-#[post("/auth/signup/<id>")]
-pub async fn signup(id: i32) -> Result<(), ErrorResponder> {
-    let jwt = create_jwt(id).unwrap();
+    // let jwt = create_jwt(id).unwrap();
 
-    println!("JWT RESULT: {}", jwt);
+    // println!("JWT RESULT: {}", jwt);
 
     Ok(())
 }

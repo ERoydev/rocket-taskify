@@ -6,6 +6,8 @@ pub mod interfaces;
 pub use interfaces::new_task::NewTask; // Change if grows
 pub use interfaces::task_dto::TaskDTO;
 
+pub mod accounts;
+
 mod error_responder;
 pub use error_responder::ErrorResponder;
 
