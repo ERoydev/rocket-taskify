@@ -5,8 +5,11 @@ use reqwest::Client as ReqClient;
 use rocket::http::{Method, Status};
 pub use setup::set_up_db;
 use rocket_taskify::api::task::*; // API Endpoints
+use rocket_taskify::api::auth::*;
+
 use tokio;
 use tokio::time::sleep;
+
 use rocket::{Rocket, Orbit};
 use rocket::fairing::{Fairing, Info, Kind};
 use rocket::{Request, Response};
@@ -121,6 +124,7 @@ async fn rocket() -> _ {
                 complete_task,
                 critical_task,
                 update_tasks_priority,
+                signup,
             ])
         .attach(SimpleFairing)
         .attach(Cors)

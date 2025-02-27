@@ -1,4 +1,5 @@
 
+// Used for authentication API
 
 pub struct User {
     pub id: i32,
