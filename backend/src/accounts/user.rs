@@ -11,8 +11,8 @@ use argon2::{
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Serialize, Debug, Copy)]
-pub struct NewUser {
+#[derive(Deserialize, Serialize, Debug)]
+pub struct UserDTO { // Data-Transfer-Object
     pub id: i32,
     pub name: String,
     pub password: String,

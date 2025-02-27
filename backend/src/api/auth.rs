@@ -7,7 +7,7 @@ use jsonwebtoken::{encode, Algorithm, DecodingKey, EncodingKey, Header, Validati
 use jsonwebtoken::errors::{Error, ErrorKind};
 use dotenv::dotenv;
 
-use crate::accounts::user::{User, NewUser};
+use crate::accounts::user::{User, UserDTO};
 use crate::ErrorResponder;
 use std::env;
 
@@ -76,7 +76,7 @@ fn decode_jwt(token: String) -> Result<Claims, ErrorKind> {
 }
 
 #[post("/auth/signup", format="json", data="<user_data>")]
-pub async fn signup(user_data: Json<NewUser>) -> Result<(), ErrorResponder> {
+pub async fn signup(user_data: Json<UserDTO>) -> Result<(), ErrorResponder> {
     User::new(user_data.id, user_data.name, user_data.password);
 
     // let jwt = create_jwt(id).unwrap();
