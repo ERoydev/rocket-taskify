@@ -1,50 +1,65 @@
 
 // Used for authentication API
-
-use argon2::{
-    password_hash::{
-        rand_core::OsRng,
-        PasswordHash, PasswordHasher, PasswordVerifier, SaltString
-    },
-    Argon2,
-};
-
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Serialize, Debug)]
-pub struct UserDTO { // Data-Transfer-Object
-    pub id: i32,
-    pub name: String,
-    pub password: String,
-}
+use super::base_user::{BaseUser};
+
+
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct User {
-    id: i32,
-    name: String,
-    password: String, // Hashed password using Argon2
+pub struct Customer {
+    pub base: BaseUser,
+    pub first_name: String,
+    pub last_name: String,
 }
 
-impl User {
-    pub fn new(id: i32, name: String, password: String) -> User {
-        Self::hash_password_argon2(&password);
+// impl Customer {
+//     fn new(id: i32, email: String, password: String, first_name: String, last_name: String) -> Customer {
+//         let base = BaseUser::create_user(id, email, password);
 
-        User{
-            id,
-            name,
-            password
-        }
-    }
+//         Customer {
+//             base,
+//             first_name,
+//             last_name
+//         }
+//     }
+// }
 
-    fn hash_password_argon2(_password: &str)  {
-        /*
-        Used Argon2 to hash the password -> Considered the most secury current algorithm for that job
-            1. Generate a Random Salt -> unique random value (16bytes) used to prevent hash collisions.
-         */
+    // fn hash_password(&self) -> String {
+    //     /*
+    //     Used Argon2 to hash the password -> Considered the most secure current algorithm for that job
+    //     1. Generate a Random Salt -> unique random value (22bytes) used to prevent hash collisions.
+    //     */
 
-        let salt = SaltString::generate(&mut OsRng);
+    //     let salt = SaltString::generate(&mut OsRng);
+    // }
+// }
 
-        println!("SALTED ARGON2: {}", salt);
-    }
+
+
+// impl User {
+//     pub fn new(id: i32, name: String, password: String) -> User {
+//         Self::hash_password_argon2(&password);
+
+//         User{
+//             id,
+//             name,
+//             password
+//         }
+//     }
+
+//     fn hash_password_argon2(password: &str)  {
+//         /*
+//         Used Argon2 to hash the password -> Considered the most secure current algorithm for that job
+//             1. Generate a Random Salt -> unique random value (22bytes) used to prevent hash collisions.
+//          */
+
+//         let salt = SaltString::generate(&mut OsRng);
+
+//         let configuration = Params::new(
+//             Params::D
+//         )
+
+        // let argon2 = Argon2::default(); // Uses Argon2id the hybrid version
+
     
-}

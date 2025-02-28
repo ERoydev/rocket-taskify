@@ -7,7 +7,7 @@ use jsonwebtoken::{encode, Algorithm, DecodingKey, EncodingKey, Header, Validati
 use jsonwebtoken::errors::{Error, ErrorKind};
 use dotenv::dotenv;
 
-use crate::accounts::user::{User, UserDTO};
+use crate::accounts::user::{UserDTO, User};
 use crate::ErrorResponder;
 use std::env;
 
@@ -27,6 +27,8 @@ Risks:
 Solution:
     - I will use ECDH Public key which clients sends with his request to register
 */
+
+
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Claims {
@@ -77,7 +79,7 @@ fn decode_jwt(token: String) -> Result<Claims, ErrorKind> {
 
 #[post("/auth/signup", format="json", data="<user_data>")]
 pub async fn signup(user_data: Json<UserDTO>) -> Result<(), ErrorResponder> {
-    User::new(user_data.id, user_data.name, user_data.password);
+    User::new(user_data.id, user_data.name.clone(), user_data.password.clone());
 
     // let jwt = create_jwt(id).unwrap();
 
