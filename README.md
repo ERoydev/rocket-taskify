@@ -18,6 +18,7 @@ This API manages tasks with basic CRUD operations.
   - [PUT /tasks](#put-tasks)
   - [GET /tasks?filter=isCompleted&value=true](#get-tasksfilteriscompletedvaluetrue)
   - [Task Priority Levels](#task-priority-levels)
+- [Authentication](#authentication-system)
 - [Frontend Implementation](#frontend-implementation)
 - [Future Improvements](#future-improvements)
 
@@ -311,6 +312,15 @@ $~~~~~~~~~~~$
 </table>
 
 $~~~~~~~~~~~$
+
+# Authentication System
+*Currently i have implemented simple starting point consisting of following relations:*
+
+- Users & Roles: Many-to-Many via UserRoles
+- Users & Permissions: Many-to-Many via UserPermissions
+- Roles & Permissions: Many-to-Many via RolePermissions
+- Users & Profile: One-to-One (Profile)
+
 # Frontend Implementation
 *I have implemented frontend just for me to experiment.*
 - It's not fully working thats why i don't provide instructions for it, anyway my task was for backend.
