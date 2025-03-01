@@ -175,7 +175,6 @@ pub async fn delete_task(id: i32, db: &State<DatabaseConnection>) -> Result<Json
             return Err(ErrorResponder::from("There is no task with this id"))
         }
     }
-    
 }
 
 

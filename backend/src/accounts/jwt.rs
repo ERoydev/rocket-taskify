@@ -8,9 +8,7 @@ use jsonwebtoken::{encode, Algorithm, DecodingKey, EncodingKey, Header, Validati
 use jsonwebtoken::errors::{Error, ErrorKind};
 use dotenv::dotenv;
 
-use crate::accounts::base_user::{BaseUser, BaseUserManager};
-use crate::accounts::users::{User, UserDTO};
-use crate::ErrorResponder;
+
 use std::env;
 
 /*
@@ -79,13 +77,3 @@ fn decode_jwt(token: String) -> Result<Claims, ErrorKind> {
     }
 }
 
-#[post("/auth/signup", format="json", data="<user_data>")]
-pub async fn signup(db: &State<DatabaseConnection>, user_data: Json<UserDTO>) -> Result<Json<User>, ErrorResponder> {
-    let db = db as &DatabaseConnection;
-
-    let base_user = BaseUser::create_user(db.into(), user_data.email.clone(), user_data.password.clone()).await;
-    let user = User::create_customer_user(user_data.into_inner(), base_user);
-    // TODO -> I need to fix email collisions, creating Profile with the User data 
-    
-    Ok(Json(user))
-}
