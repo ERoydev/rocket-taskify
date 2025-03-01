@@ -20,7 +20,7 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(User::Email).string().not_null())
                     .col(ColumnDef::new(User::Password).string().not_null())
                     .col(ColumnDef::new(User::IsActive).boolean().not_null().default(false))
-                    .col(ColumnDef::new(User::LastLogin).string().not_null().string())
+                    .col(ColumnDef::new(User::LastLogin).string()) // I allow this to be Null when user haven't logged in
                     .col(ColumnDef::new(User::CreatedAt).timestamp_with_time_zone().not_null().string())
                     .col(ColumnDef::new(User::UpdatedAt).timestamp_with_time_zone().not_null().string())
                     .to_owned(),

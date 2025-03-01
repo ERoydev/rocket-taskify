@@ -1,4 +1,4 @@
-use sea_orm::{DatabaseConnection, Set};
+use sea_orm::{ActiveModelTrait, DatabaseConnection, Set};
 use serde::{Deserialize, Serialize};
 
 use argon2::{
@@ -7,8 +7,10 @@ use argon2::{
         PasswordHash, PasswordHasher as ArgonPasswordHasher, PasswordVerifier, SaltString
     }, Algorithm, Argon2, Params, ParamsBuilder, Version
 };
-use chrono::{self, NaiveDate, NaiveDateTime, Utc};
+use chrono::{self, Utc};
 use rocket::State;
+
+use crate::entities::user;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct BaseUser {
@@ -17,56 +19,65 @@ pub struct BaseUser {
     password: String,
 
     // Role-based flags
-    is_admin: bool,          // Determines if the user is an administrator
-    is_active: bool,         // Determines if the user is active
-    is_verified: bool,       // Determines if the email is verified
-    is_suspended: bool,      // Determines if the user is suspended
+    // is_admin type of flag is going to be handled with Many To Many relationship to Roles
+    is_active: bool,     
+    last_login: Option<String>, // Default is Null
 
     // Meta data
-    created_at: chrono::NaiveDateTime,
-    updated_at: chrono::NaiveDateTime,
+    created_at: String,
+    updated_at: String,
 }
 
-// pub trait BaseUserManager {
-//     fn encrypt_password(&self) -> String; // Returns encrypted password
-//     fn create_user(db: &State<DatabaseConnection>, email: String, password: String) -> Self;
-//     // fn create_admin_user(id: i32, email: String, password: String) -> Self;
-// }
 
-// impl BaseUserManager for BaseUser {
-//     fn create_user(db: &State<DatabaseConnection>, email: String, password: String) -> Self {
-//         let db = db as &DatabaseConnection;
+pub trait BaseUserManager {
+    fn encrypt_password(password: String) -> String; // Returns encrypted password
+    fn create_user(db: &State<DatabaseConnection>, email: String, password: String) -> impl std::future::Future<Output = BaseUser>; // Returns Future which means i should .await() this function
+    // fn create_admin_user(id: i32, email: String, password: String) -> Self;
+}
 
-//         let now = Utc::now().naive_utc();
+impl BaseUserManager for BaseUser {
+    async fn create_user(db: &rocket::State<sea_orm::DatabaseConnection>, email: String, password: String) -> Self  {
+        let now = Utc::now().naive_utc().to_string();
 
-//         let mut base_user = BaseUser {
-//             email,
-//             password,
-//             is_admin: false,
-//             is_active: false,
-//             is_verified: false,
-//             is_suspended: false,
-//             created_at: Set(now),
-//             updated_at: Set(now)
-//         };
+        let hashed_password = BaseUser::encrypt_password(password);
 
-//         let hashed_password = base_user.encrypt_password();
-//         base_user.password = hashed_password;
+        let new_user = user::ActiveModel {
+            email: Set(email.clone()),
+            password: Set(hashed_password.clone()), // You should hash this before storing
+            is_active: Set(false),
+            last_login: Set(None), // Optional field
+            created_at: Set(now.clone()),
+            updated_at: Set(now.clone()),
+            ..Default::default() // Default handles the auto-incrementing ID
+        };
 
-//         base_user
-//     }
+        let inserted_user = new_user.insert(db.inner()).await.expect("Failed to insert user");
 
-//     fn encrypt_password(&self) -> String {
-//         // Generate random salt (22bytes) to prevent hash collisions
-//         let salt = SaltString::generate(&mut OsRng);
+        let base_user = BaseUser {
+            id: inserted_user.id,
+            email: inserted_user.email,
+            password: inserted_user.password,
+            is_active: inserted_user.is_active,
+            last_login: inserted_user.last_login,
+            created_at: inserted_user.created_at,
+            updated_at: inserted_user.updated_at,
+        };
 
-//         // I can use Argon2 Struct to create the hashing algorithm using custom configuration values if i want to optimize memory usage of this hashing operation
-//         // - Default uses the Hybrid Argon algorithm that is optimized to work for the both security vulnerabilities (GPU cracking attacks,  side-channel attacks)
-//         let argon2 = Argon2::default(); 
+        base_user
 
-//         let password_bytes = self.password.as_bytes(); // Convert password to bytes
+    }
 
-//         argon2.hash_password(password_bytes, &salt).unwrap().to_string()
-//     }
-// }
+    fn encrypt_password(password: String) -> String {
+        // Generate random salt (22bytes) to prevent hash collisions
+        let salt = SaltString::generate(&mut OsRng);
+
+        // I can use Argon2 Struct to create the hashing algorithm using custom configuration values if i want to optimize memory usage of this hashing operation
+        // - Default uses the Hybrid Argon algorithm that is optimized to work for the both security vulnerabilities (GPU cracking attacks,  side-channel attacks)
+        let argon2 = Argon2::default(); 
+
+        let password_bytes = password.as_bytes(); // Convert password to bytes
+
+        argon2.hash_password(password_bytes, &salt).unwrap().to_string()
+    }
+}
 
