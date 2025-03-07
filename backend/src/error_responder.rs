@@ -11,7 +11,7 @@ Used to catch and handle errors for example when i create_task i return it with
 */
 
 
-#[derive(Responder,)]
+#[derive(Responder, Debug)]
 #[response(status = 500, content_type = "json")]
 pub struct ErrorResponder {
     message: String

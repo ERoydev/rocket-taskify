@@ -32,7 +32,7 @@ Solution:
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Claims {
-    // Struct that JWT will use to encode
+    // Struct that JWT will use to encode PAYLOAD
     pub subject_id: i32, // Corresponds to id of the user who created the token
     exp: usize // Represents how long the token has to live
 }
@@ -53,19 +53,25 @@ pub fn create_jwt(id: i32) -> Result<String, Error> {
         .checked_add_signed(chrono::Duration::seconds(TOKEN_EXPIRE_TIME_IN_SECONDS))
         .expect("Invalid timestamp").timestamp(); // Variable holding current time and then add additional EXPIRE_TIME seconds using chrono
 
+    // Payload => user related data like user_id, expiration ...
     let claims = Claims {
         subject_id: id,
         exp: expiration as usize
     };
 
+    // Header containing metadata like the algorithm used
     let header = Header::new(USED_HASH_ALGORITHM);
 
+    // Signature
     encode(&header, &claims, &EncodingKey::from_secret(secret.as_bytes())) // Returns token
 }
 
-fn decode_jwt(token: String) -> Result<Claims, ErrorKind> {
+pub fn decode_jwt(token: String) -> Result<Claims, ErrorKind> {
+    // Used to decode and authenticate a token when provided
+
     let secret = env::var("JWT_SECRET").expect("JWT_SECRET MUST BE SET");
-    let token = token.trim_start_matches("Bearer").trim();
+
+    let token = token.trim_start_matches("Bearer").trim(); // I need to extract the token itself
 
     match decode::<Claims>(
         &token,

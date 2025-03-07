@@ -15,7 +15,7 @@ pub struct User {
 }
 
 impl User {
-    pub fn create_customer_user(user_data: NewUser, base: BaseUser) -> Self {
+    pub fn create_customer_user(user_data: NewUser, base: BaseUser) -> User {
         User {
             base,
             first_name: user_data.first_name,
