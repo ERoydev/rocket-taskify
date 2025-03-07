@@ -12,7 +12,7 @@ use chrono::{self, Utc};
 use rocket::State;
 
 use crate::{entities::user::{self, ActiveModel, Model}, ErrorResponder};
-use super::interface::UserCredentials;
+use super::{interface::UserCredentials, jwt::{create_jwt, JwtResponse}};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct BaseUser {
@@ -67,7 +67,7 @@ impl user::ActiveModel {
 
 pub trait BaseUserManager {
     fn create_user(db: &State<DatabaseConnection>, email: String, password: String) -> impl std::future::Future<Output = Result<BaseUser, ErrorResponder>>; // Returns Future which means i should .await() this function
-    fn login_user(db: &rocket::State<sea_orm::DatabaseConnection>, user: Json<UserCredentials>) -> impl std::future::Future<Output = Result<user::Model, ErrorResponder>>;
+    fn login_user(db: &rocket::State<sea_orm::DatabaseConnection>, user: Json<UserCredentials>) -> impl std::future::Future<Output = Result<JwtResponse, ErrorResponder>>;
     fn check_if_user_exists(db: &rocket::State<sea_orm::DatabaseConnection>, email: &str) -> impl std::future::Future<Output = Result<bool, ErrorResponder>>;
     fn get_user_by_email(db: &rocket::State<sea_orm::DatabaseConnection>, email: &str) -> impl std::future::Future<Output = Result<user::Model, ErrorResponder>>;
     fn verify_password(raw_password: &str, hashed_password: &str) -> Result<(), ErrorResponder>;
@@ -101,7 +101,7 @@ impl BaseUserManager for BaseUser {
         Ok(base_user)
     }
 
-    async fn login_user(db: &rocket::State<sea_orm::DatabaseConnection>, user_credentials: Json<UserCredentials>) -> Result<user::Model, ErrorResponder> {
+    async fn login_user(db: &rocket::State<sea_orm::DatabaseConnection>, user_credentials: Json<UserCredentials>) -> Result<JwtResponse, ErrorResponder> {
         let user_exist = BaseUser::check_if_user_exists(db, &user_credentials.email).await?;
 
         if !user_exist {
@@ -112,8 +112,10 @@ impl BaseUserManager for BaseUser {
         BaseUser::verify_password(&user_credentials.password, &user.password)?;
         
         // JWT TOKEN LOGIC BELLOW
-
-        Ok(user)    
+        match create_jwt(user.id) {
+            Ok(jwt_response) => Ok(jwt_response),
+            Err(_) => Err(ErrorResponder::new("Unable to create JWT token", Status::InternalServerError)),
+        }   
     }
 
     async fn check_if_user_exists(db: &rocket::State<sea_orm::DatabaseConnection>, email: &str) -> Result<bool, ErrorResponder> {

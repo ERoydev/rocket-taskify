@@ -1,11 +1,15 @@
-use rocket::{post, get};
+use rocket::http::{ContentType, Status};
+use rocket::{get, post, Response};
 use rocket::{serde::json::Json, State};
 
 use sea_orm::DatabaseConnection;
 
-use crate::accounts::base_user;
+use crate::accounts::auth_responder::AuthResponder;
+use crate::accounts::{base_user, jwt};
 use crate::accounts::{interface::{NewUser, UserCredentials}, base_user::{BaseUser, BaseUserManager}, users::User};
 use crate::ErrorResponder;
+
+use super::request_responder::ResponseBody;
 
 
 #[post("/auth/signup", format="json", data="<user_data>")]
@@ -29,18 +33,17 @@ pub async fn signup(db: &State<DatabaseConnection>, user_data: Json<NewUser>) ->
 }
 
 #[post("/auth/login", format="json", data="<user_data>")]
-pub async fn login(db: &State<DatabaseConnection>, user_data: Json<UserCredentials>) -> Result<(), ErrorResponder> {
+pub async fn login(db: &State<DatabaseConnection>, user_data: Json<UserCredentials>) -> Result<AuthResponder, ErrorResponder> {
     let db = db as &DatabaseConnection;
 
-    let login_response = BaseUser::login_user(db.into(), user_data).await;
+    let jwt_response = BaseUser::login_user(db.into(), user_data).await?; // All the logic happens here
 
-    match login_response {
-        Ok(value) => {
-            println!("USER FOUNDED: {:?}", value);
-            Ok(())
-        }
-        Err(err) => Err(ErrorResponder::from(err))
-    }
+    Ok(AuthResponder {
+        token: jwt_response.token,
+        status: Status::Ok,
+        expires_in: jwt_response.exp,
+    })
+
 }
 
 #[post("/auth/logout/<id>")]
