@@ -32,9 +32,15 @@ pub async fn signup(db: &State<DatabaseConnection>, user_data: Json<NewUser>) ->
 pub async fn login(db: &State<DatabaseConnection>, user_data: Json<UserCredentials>) -> Result<(), ErrorResponder> {
     let db = db as &DatabaseConnection;
 
-    println!("LOGIN DATA: {:?}", user_data);
+    let login_response = BaseUser::login_user(db.into(), user_data).await;
 
-    Ok(())
+    match login_response {
+        Ok(value) => {
+            println!("USER FOUNDED: {:?}", value);
+            Ok(())
+        }
+        Err(err) => Err(ErrorResponder::from(err))
+    }
 }
 
 #[post("/auth/logout/<id>")]

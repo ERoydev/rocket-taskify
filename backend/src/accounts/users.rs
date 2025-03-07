@@ -2,6 +2,8 @@
 // Used for authentication API
 use serde::{Deserialize, Serialize};
 
+use crate::entities::user;
+
 use super::{base_user::BaseUser, interface::NewUser};
 
 
