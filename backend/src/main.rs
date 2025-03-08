@@ -126,6 +126,7 @@ async fn rocket() -> _ {
                 update_tasks_priority,
                 signup,
                 login,
+                logout,
             ])
         .attach(SimpleFairing)
         .attach(Cors)

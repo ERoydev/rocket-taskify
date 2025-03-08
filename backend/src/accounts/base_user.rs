@@ -14,6 +14,7 @@ use rocket::State;
 use crate::{entities::user::{self, ActiveModel, Model}, ErrorResponder};
 use super::{interface::UserCredentials, jwt::{create_jwt, JwtResponse}};
 
+
 #[derive(Debug, Deserialize, Serialize)]
 pub struct BaseUser {
     id: i32,
@@ -23,7 +24,7 @@ pub struct BaseUser {
     // Role-based flags
     // is_admin type of flag is going to be handled with Many To Many relationship to Roles
     is_active: bool,     
-    
+
     // Meta data
     created_at: String,
     updated_at: String,
@@ -112,6 +113,7 @@ impl BaseUserManager for BaseUser {
         BaseUser::verify_password(&user_credentials.password, &user.password)?;
         
         // JWT TOKEN LOGIC BELLOW
+        // TODO: HANDLER ROLE BASED ACCESS
         match create_jwt(user.id) {
             Ok(jwt_response) => Ok(jwt_response),
             Err(_) => Err(ErrorResponder::new("Unable to create JWT token", Status::InternalServerError)),

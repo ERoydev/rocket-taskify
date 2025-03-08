@@ -1,9 +1,10 @@
+use rocket::http::Status;
 use rocket::{post, get};
 use rocket::{serde::json::Json, State};
-use sea_orm::DatabaseConnection;
 use serde::{Deserialize, Serialize};
 use chrono::Utc;
 
+use rocket::request::{self, FromRequest, Request};
 use jsonwebtoken::{encode, Algorithm, DecodingKey, EncodingKey, Header, Validation, decode};
 use jsonwebtoken::errors::{Error, ErrorKind};
 use dotenv::dotenv;
@@ -37,13 +38,66 @@ pub struct JwtResponse {
 pub struct Claims {
     // Struct that JWT will use to encode PAYLOAD
     pub subject_id: i32, // Corresponds to id of the user who created the token
-    exp: u64 // Represents how long the token has to live
+    exp: u64, // Represents how long the token has to live
 }
 
 #[derive(Debug)]
 pub struct JWT {
     // Struct for the token itself
     pub claims: Claims
+}
+
+// Struct to store authenticated user details
+#[derive(Debug)]
+pub struct AuthenticatedUser { // This is like request Guard for my routes
+    pub user_id: i32,
+}
+
+/*
+Example of usage:
+
+#[get("/protected")]
+fn protected_route(user: AuthenticatedUser) -> String {
+    format!("Welcome, User ID: {}", user.user_id)
+}
+
+    - Now, only requests with valid JWTs can access /protected.
+*/
+
+#[rocket::async_trait]
+impl<'r> FromRequest<'r> for AuthenticatedUser {
+    /*
+        This plays the role of a middleware(JWT Authentication Guard)
+        When a user makes a request, the middleware (JWT Auth Guard) should:
+
+            1.Check if the request has an Authorization: Bearer <token> header.
+            2.Verify the JWT token (decode & validate it).
+            3.Extract the user’s ID and role from the token.
+            4.Allow or deny access based on the token’s validity.
+     */
+
+    type Error = ();
+
+    async fn from_request(req: &'r Request<'_>) -> request::Outcome<Self, Self::Error> {
+        // 1️⃣ Get the Authorization header
+        let auth_header = req.headers().get_one("Authorization");
+
+        match auth_header {
+            Some(token) => {
+                // TODO: This logic is not working yet somewhere in decoding error happens
+                match decode_jwt(token.to_string()) {
+                    Ok(token_data) => request::Outcome::Success(AuthenticatedUser{
+                        user_id: token_data.subject_id
+                    }),
+                    Err(_) => request::Outcome::Error((Status::Unauthorized, ()))
+                }
+            }
+            None => {
+                eprintln!("❌ Missing Authorization Header");
+                request::Outcome::Error((Status::Unauthorized, ()))
+            }
+        }
+    }
 }
 
 pub fn create_jwt(id: i32) -> Result<JwtResponse, Error> {
@@ -59,7 +113,7 @@ pub fn create_jwt(id: i32) -> Result<JwtResponse, Error> {
     // Payload => user related data like user_id, expiration ...
     let claims = Claims {
         subject_id: id,
-        exp: expiration
+        exp: expiration,
     };
 
     // Header containing metadata like the algorithm used

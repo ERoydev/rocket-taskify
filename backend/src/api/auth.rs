@@ -5,6 +5,7 @@ use rocket::{serde::json::Json, State};
 use sea_orm::DatabaseConnection;
 
 use crate::accounts::auth_responder::AuthResponder;
+use crate::accounts::jwt::AuthenticatedUser;
 use crate::accounts::{base_user, jwt};
 use crate::accounts::{interface::{NewUser, UserCredentials}, base_user::{BaseUser, BaseUserManager}, users::User};
 use crate::ErrorResponder;
@@ -46,9 +47,12 @@ pub async fn login(db: &State<DatabaseConnection>, user_data: Json<UserCredentia
 
 }
 
-#[post("/auth/logout/<id>")]
-pub async fn logout(db: &State<DatabaseConnection>, id: i32) -> Result<(), ErrorResponder> {
+#[post("/auth/logout")]
+pub async fn logout(db: &State<DatabaseConnection>, user: AuthenticatedUser) -> Result<(), ErrorResponder> {
     let db = db as &DatabaseConnection;
+
+
+    println!("USER TO LOGOUT: {:?}", user);
 
     Ok(())
 }
