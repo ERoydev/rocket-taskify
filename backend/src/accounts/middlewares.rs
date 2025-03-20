@@ -1,8 +1,10 @@
 use crate::error_responder::ErrorResponder;
 
 use super::jwt::{decode_jwt, Claims};
+use super::utils::is_token_revoked;
 use rocket::request::{self, FromRequest, Request};
 use rocket::http::Status;
+use sea_orm::DatabaseConnection;
 
 /*
 Module responsible for Request Guards for authentication purposes only.
@@ -13,6 +15,7 @@ Module responsible for Request Guards for authentication purposes only.
 #[derive(Debug)]
 pub struct AuthenticatedUser { // This is like request Guard for my routes
     pub claims: Claims,
+    pub token: String,
 }
 
 /*
@@ -47,14 +50,38 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
     type Error = ErrorResponder;
 
     async fn from_request(req: &'r Request<'_>) -> request::Outcome<Self, ErrorResponder> {
-        // 1️⃣ Get the Authorization header
+        // 1️. Get the Authorization header
         let auth_header = req.headers().get_one("Authorization");
+
+        //  2. Get the database connection from Rocket's state
+        let db = match req.rocket().state::<DatabaseConnection>() {
+            Some(db) => db,
+            None => {
+                let response = ErrorResponder::new("Database connection error", Status::InternalServerError);
+                return request::Outcome::Error((Status::InternalServerError, response));
+            }
+        };
 
         match auth_header {
             Some(token) => {
-                // TODO: This logic is not working yet somewhere in decoding error happens
+
+                let token = token.trim_start_matches("Bearer").trim().to_string(); // Remove `Bearer ` prefix
+
+                // 🔹 3️⃣ Check if the token is revoked
+                if is_token_revoked(db, &token).await {
+                    let response = ErrorResponder::new("Token has been revoked", Status::Unauthorized);
+                    return request::Outcome::Error((Status::Unauthorized, response));
+                }
+
                 match decode_jwt(token.to_string()) {
-                    Ok(claims) => request::Outcome::Success( AuthenticatedUser {claims} ),
+                    Ok(claims) => {
+                        request::Outcome::Success( 
+                            AuthenticatedUser {
+                                claims, 
+                                token,
+                            })
+                    }
+
                     Err(err) => match &err {
                         jsonwebtoken::errors::ErrorKind::ExpiredSignature => {                            
                             let response = ErrorResponder::new("Error validating JWT token - Expired Token", Status::Unauthorized);

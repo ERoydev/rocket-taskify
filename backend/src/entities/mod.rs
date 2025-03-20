@@ -2,5 +2,7 @@
 
 pub mod prelude;
 
+pub mod profile;
+pub mod revoked_tokens;
 pub mod task;
 pub mod user;

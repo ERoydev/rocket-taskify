@@ -6,3 +6,4 @@ pub mod jwt;
 pub mod interface;
 pub mod auth_responder;
 pub mod middlewares; // Auth guards
+pub mod utils;

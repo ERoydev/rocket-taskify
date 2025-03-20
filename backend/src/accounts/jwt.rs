@@ -13,6 +13,7 @@ Used the following documentation as a guidance for creating the JWT authenticati
     - url: https://medium.com/@jeynesbrook/jwt-authentication-for-api-routes-using-rocket-rs-and-rust-fe7529792a70
 */
 
+// Currently is 1 min for developing
 const TOKEN_EXPIRE_TIME_IN_SECONDS: i64 = 60; // i64 expected from chrono::Duration::seconds
 const USED_HASH_ALGORITHM: Algorithm = Algorithm::HS512;
 
@@ -34,7 +35,7 @@ pub struct JwtResponse {
 pub struct Claims {
     // Struct that JWT will use to encode PAYLOAD
     pub subject_id: i32, // Corresponds to id of the user who created the token
-    exp: u64, // Represents how long the token has to live
+    pub exp: u64, // Represents how long the token has to live
 }
 
 pub fn create_jwt(id: i32) -> Result<JwtResponse, Error> {
