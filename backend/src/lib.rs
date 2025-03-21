@@ -16,3 +16,5 @@ pub use resources::base_sql::get_base_sql;
 
 pub use rocket;
 pub mod setup;
+pub mod cors;
+pub mod tasks;

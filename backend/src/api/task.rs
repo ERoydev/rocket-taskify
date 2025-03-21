@@ -99,7 +99,6 @@ pub async fn get_task_by_id(id: i32, db: &State<DatabaseConnection>) -> Result<J
     }
 }
 
-
 #[post("/tasks", format="json", data="<new_task>")]
 pub async fn create_task(db: &State<DatabaseConnection>, new_task: Json<NewTask>) -> Result<Json<TaskDTO>, ErrorResponder> {
     let db = db as &DatabaseConnection;
@@ -228,8 +227,9 @@ pub async fn critical_task(id: i32, db: &State<DatabaseConnection>) -> Result<Js
     Ok(Json(task_dto))
 }
 
-#[post("/tasks/update_priority")]
-pub async fn update_tasks_priority(db: &State<DatabaseConnection>) -> Result<(), ErrorResponder> {
+
+#[post("/tasks/update_priority/<id>")]
+pub async fn update_tasks_priority(db: &State<DatabaseConnection>, id: i32) -> Result<(), ErrorResponder> {
     let db = db as &DatabaseConnection;
 
     // I fetch tasks that need a priority update
@@ -240,6 +240,7 @@ pub async fn update_tasks_priority(db: &State<DatabaseConnection>) -> Result<(),
                 .add(task::Column::IsCompleted.eq(false)) 
                 .add(task::Column::IsCritical.eq(false))
                 .add(task::Column::Priority.not_like("%expired%"))
+                // Need to add condition to query only tasks that are for this user id
         )
         .into_model()
         .all(db)

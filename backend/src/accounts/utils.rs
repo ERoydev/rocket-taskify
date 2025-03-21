@@ -3,7 +3,7 @@ use crate::entities::revoked_tokens::{Entity as RevokedToken, Column};
 
 pub async fn is_token_revoked(db: &DatabaseConnection, token: &str) -> bool {
     RevokedToken::find()
-        .filter(Column::Token.eq(token)) // ✅ Now .eq() will work correctly
+        .filter(Column::Token.eq(token)) // 
         .one(db)
         .await
         .unwrap_or(None) // If there's an error, return None instead of crashing

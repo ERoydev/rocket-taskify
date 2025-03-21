@@ -67,12 +67,13 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
 
                 let token = token.trim_start_matches("Bearer").trim().to_string(); // Remove `Bearer ` prefix
 
-                // 🔹 3️⃣ Check if the token is revoked
+                // 3. Check if the token is revoked => A token is revoked when user logout and his token is added to the RevokedTokensTable to prevent using a token which is not expired but is logged out
                 if is_token_revoked(db, &token).await {
                     let response = ErrorResponder::new("Token has been revoked", Status::Unauthorized);
                     return request::Outcome::Error((Status::Unauthorized, response));
                 }
-
+                
+                // Decode the JWT Token to get claims
                 match decode_jwt(token.to_string()) {
                     Ok(claims) => {
                         request::Outcome::Success( 
