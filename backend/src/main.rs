@@ -7,9 +7,6 @@ pub use setup::set_up_db;
 use rocket_taskify::cors::Cors;
 use rocket_taskify::api::task::*; // API Endpoints
 use rocket_taskify::api::auth::*;
-
-use tokio;
-
 /// SeaORM COMMAND INSTRUCTIONS -------------------------------------------
 // sea-orm-cli migrate generate create_tasks_table => Create migration file 
 
