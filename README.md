@@ -2,6 +2,7 @@
 
 This API manages tasks with basic CRUD operations.
 
+
 ## Table of Contents
 - [Tech Stack](#tech-stack)
 - [Rocket Taskify Installation Guide](#rocket-taskify-installation-guide)
